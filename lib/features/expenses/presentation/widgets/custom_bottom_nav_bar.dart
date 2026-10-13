@@ -15,15 +15,17 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceCard.withValues(alpha: 0.95),
-        border: const Border(
-          top: BorderSide(color: AppColors.borderSubtle, width: 1),
+        color: colors.surfaceCard.withValues(alpha: 0.95),
+        border: Border(
+          top: BorderSide(color: colors.borderSubtle, width: 1),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: colors.isDark ? 0.3 : 0.03),
             offset: const Offset(0, -2),
             blurRadius: 12,
           ),
@@ -75,6 +77,9 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final typography = context.typography;
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -87,7 +92,7 @@ class _NavBarItem extends StatelessWidget {
         ),
         constraints: const BoxConstraints(minWidth: 120, minHeight: 44),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.primary : Colors.transparent,
+          color: isActive ? colors.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(AppDimens.radiusFull),
         ),
         child: Row(
@@ -97,13 +102,13 @@ class _NavBarItem extends StatelessWidget {
             Icon(
               isActive ? activeIcon : icon,
               size: 20,
-              color: isActive ? AppColors.ink : AppColors.textMuted,
+              color: isActive ? colors.onPrimary : colors.textMuted,
             ),
             const SizedBox(width: AppDimens.spaceSm),
             Text(
               label,
-              style: AppTypography.labelMd.copyWith(
-                color: isActive ? AppColors.ink : AppColors.textMuted,
+              style: typography.labelMd.copyWith(
+                color: isActive ? colors.onPrimary : colors.textMuted,
                 fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
               ),
             ),

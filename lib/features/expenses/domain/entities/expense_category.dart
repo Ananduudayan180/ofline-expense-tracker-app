@@ -24,6 +24,20 @@ class ExpenseCategory {
     required this.color,
   });
 
+  /// Adapts category accent color for dark mode when high contrast is needed
+  Color getEffectiveColor(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (!isDark) return color;
+    switch (type) {
+      case ExpenseCategoryType.bills:
+        return const Color(0xFF8BAE78);
+      case ExpenseCategoryType.other:
+        return const Color(0xFF7A8073);
+      default:
+        return color;
+    }
+  }
+
   static const List<ExpenseCategory> all = [
     ExpenseCategory(
       type: ExpenseCategoryType.food,

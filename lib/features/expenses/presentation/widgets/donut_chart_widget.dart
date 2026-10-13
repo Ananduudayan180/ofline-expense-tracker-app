@@ -58,6 +58,9 @@ class _DonutChartWidgetState extends State<DonutChartWidget>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final typography = context.typography;
+
     return SizedBox(
       width: 210,
       height: 210,
@@ -72,6 +75,11 @@ class _DonutChartWidgetState extends State<DonutChartWidget>
                 painter: _DonutChartPainter(
                   breakdowns: widget.breakdowns,
                   animationProgress: _animation.value,
+                  trackColor: colors.surfaceContainer,
+                  categoryColors: {
+                    for (final b in widget.breakdowns)
+                      b.category.type: b.category.getEffectiveColor(context),
+                  },
                 ),
               );
             },
@@ -82,26 +90,26 @@ class _DonutChartWidgetState extends State<DonutChartWidget>
             children: [
               Text(
                 'SPENT',
-                style: AppTypography.labelSm.copyWith(
+                style: typography.labelSm.copyWith(
                   letterSpacing: 1.0,
-                  color: AppColors.textMuted,
+                  color: colors.textMuted,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 CurrencyFormatter.formatCompact(widget.totalAmount),
-                style: AppTypography.headlineMd.copyWith(
+                style: typography.headlineMd.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: AppColors.ink,
+                  color: colors.ink,
                   fontSize: 22,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 widget.periodLabel,
-                style: AppTypography.labelSm.copyWith(
-                  color: AppColors.primaryDark,
+                style: typography.labelSm.copyWith(
+                  color: colors.primaryDark,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -116,10 +124,14 @@ class _DonutChartWidgetState extends State<DonutChartWidget>
 class _DonutChartPainter extends CustomPainter {
   final List<CategoryBreakdown> breakdowns;
   final double animationProgress;
+  final Color trackColor;
+  final Map<dynamic, Color> categoryColors;
 
   _DonutChartPainter({
     required this.breakdowns,
     required this.animationProgress,
+    required this.trackColor,
+    required this.categoryColors,
   });
 
   @override
@@ -129,7 +141,7 @@ class _DonutChartPainter extends CustomPainter {
     final radius = (size.width - strokeWidth) / 2;
 
     final bgPaint = Paint()
-      ..color = AppColors.surfaceContainer
+      ..color = trackColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth;
 
@@ -146,7 +158,7 @@ class _DonutChartPainter extends CustomPainter {
 
       if (sweepAngle > 0.01) {
         final paint = Paint()
-          ..color = item.category.color
+          ..color = categoryColors[item.category.type] ?? item.category.color
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = strokeWidth;
@@ -165,6 +177,8 @@ class _DonutChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _DonutChartPainter oldDelegate) {
     return oldDelegate.animationProgress != animationProgress ||
-        oldDelegate.breakdowns != breakdowns;
+        oldDelegate.breakdowns != breakdowns ||
+        oldDelegate.trackColor != trackColor ||
+        oldDelegate.categoryColors != categoryColors;
   }
 }

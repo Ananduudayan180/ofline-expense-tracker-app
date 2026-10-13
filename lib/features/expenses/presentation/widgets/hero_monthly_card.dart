@@ -18,16 +18,18 @@ class HeroMonthlyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final typography = context.typography;
     final isDecrease = percentageChange <= 0;
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: colors.primary,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.35),
+            color: colors.primary.withValues(alpha: colors.isDark ? 0.25 : 0.35),
             offset: const Offset(0, 6),
             blurRadius: 18,
           ),
@@ -46,7 +48,7 @@ class HeroMonthlyCard extends StatelessWidget {
                 height: 128,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.ink.withValues(alpha: 0.05),
+                  color: colors.onPrimary.withValues(alpha: 0.05),
                 ),
               ),
             ),
@@ -58,7 +60,7 @@ class HeroMonthlyCard extends StatelessWidget {
                 height: 96,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.ink.withValues(alpha: 0.05),
+                  color: colors.onPrimary.withValues(alpha: 0.04),
                 ),
               ),
             ),
@@ -74,8 +76,8 @@ class HeroMonthlyCard extends StatelessWidget {
                     children: [
                       Text(
                         'TOTAL THIS MONTH',
-                        style: AppTypography.labelMd.copyWith(
-                          color: AppColors.ink.withValues(alpha: 0.8),
+                        style: typography.labelMd.copyWith(
+                          color: colors.onPrimary.withValues(alpha: 0.8),
                           letterSpacing: 1.2,
                           fontWeight: FontWeight.w700,
                         ),
@@ -83,15 +85,15 @@ class HeroMonthlyCard extends StatelessWidget {
                       Icon(
                         Icons.verified_user_outlined,
                         size: 20,
-                        color: AppColors.ink.withValues(alpha: 0.7),
+                        color: colors.onPrimary.withValues(alpha: 0.7),
                       ),
                     ],
                   ),
                   const SizedBox(height: AppDimens.spaceSm),
                   Text(
                     CurrencyFormatter.format(totalAmount),
-                    style: AppTypography.displayHeroMobile.copyWith(
-                      color: AppColors.ink,
+                    style: typography.displayHeroMobile.copyWith(
+                      color: colors.onPrimary,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -104,7 +106,7 @@ class HeroMonthlyCard extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.ink.withValues(alpha: 0.1),
+                          color: colors.onPrimary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Row(
@@ -115,13 +117,13 @@ class HeroMonthlyCard extends StatelessWidget {
                                   ? Icons.arrow_downward_rounded
                                   : Icons.arrow_upward_rounded,
                               size: 14,
-                              color: AppColors.ink,
+                              color: colors.onPrimary,
                             ),
                             const SizedBox(width: 2),
                             Text(
                               '${percentageChange.abs().toStringAsFixed(1)}%',
-                              style: AppTypography.labelSm.copyWith(
-                                color: AppColors.ink,
+                              style: typography.labelSm.copyWith(
+                                color: colors.onPrimary,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -131,8 +133,8 @@ class HeroMonthlyCard extends StatelessWidget {
                       const SizedBox(width: AppDimens.spaceSm),
                       Text(
                         'vs. last month (${CurrencyFormatter.format(previousAmount)})',
-                        style: AppTypography.labelSm.copyWith(
-                          color: AppColors.ink.withValues(alpha: 0.75),
+                        style: typography.labelSm.copyWith(
+                          color: colors.onPrimary.withValues(alpha: 0.75),
                         ),
                       ),
                     ],

@@ -19,15 +19,18 @@ class MetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final typography = context.typography;
+
     return Container(
       padding: const EdgeInsets.all(AppDimens.spaceMd),
       decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
+        color: colors.surfaceCard,
         borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-        border: Border.all(color: AppColors.borderSubtle, width: 1),
+        border: Border.all(color: colors.borderSubtle, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: colors.isDark ? 0.3 : 0.02),
             offset: const Offset(0, 2),
             blurRadius: 6,
           ),
@@ -42,9 +45,9 @@ class MetricTile extends StatelessWidget {
             children: [
               Text(
                 label.toUpperCase(),
-                style: AppTypography.labelSm.copyWith(
+                style: typography.labelSm.copyWith(
                   letterSpacing: 0.8,
-                  color: AppColors.textMuted,
+                  color: colors.textMuted,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -52,13 +55,13 @@ class MetricTile extends StatelessWidget {
                 width: 26,
                 height: 26,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerLow,
+                  color: colors.surfaceContainerLow,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   icon,
                   size: 14,
-                  color: AppColors.ink,
+                  color: colors.ink,
                 ),
               ),
             ],
@@ -69,16 +72,16 @@ class MetricTile extends StatelessWidget {
             children: [
               Text(
                 value,
-                style: AppTypography.headlineMd.copyWith(
-                  color: AppColors.ink,
+                style: typography.headlineMd.copyWith(
+                  color: colors.ink,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: AppTypography.labelSm.copyWith(
-                  color: AppColors.textMuted,
+                style: typography.labelSm.copyWith(
+                  color: colors.textMuted,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

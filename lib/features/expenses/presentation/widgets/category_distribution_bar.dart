@@ -16,6 +16,9 @@ class CategoryDistributionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final typography = context.typography;
+
     // Only keep categories that have positive percentages
     final activeBreakdowns =
         breakdowns.where((b) => b.percentage > 0).toList();
@@ -23,12 +26,12 @@ class CategoryDistributionBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimens.spaceMd),
       decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
+        color: colors.surfaceCard,
         borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-        border: Border.all(color: AppColors.borderSubtle, width: 1),
+        border: Border.all(color: colors.borderSubtle, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: colors.isDark ? 0.3 : 0.02),
             offset: const Offset(0, 2),
             blurRadius: 6,
           ),
@@ -42,15 +45,15 @@ class CategoryDistributionBar extends StatelessWidget {
             children: [
               Text(
                 'Monthly Distribution',
-                style: AppTypography.labelMd.copyWith(
+                style: typography.labelMd.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppColors.ink,
+                  color: colors.ink,
                 ),
               ),
               Text(
                 topCategoryName != null ? 'Top: $topCategoryName' : 'All categories',
-                style: AppTypography.labelSm.copyWith(
-                  color: AppColors.textMuted,
+                style: typography.labelSm.copyWith(
+                  color: colors.textMuted,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -63,16 +66,16 @@ class CategoryDistributionBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppDimens.radiusFull),
             child: Container(
               height: 10,
-              color: AppColors.surfaceContainer,
+              color: colors.surfaceContainer,
               child: activeBreakdowns.isEmpty
-                  ? Container(color: AppColors.surfaceContainer)
+                  ? Container(color: colors.surfaceContainer)
                   : Row(
                       children: activeBreakdowns.map((b) {
                         return Expanded(
                           flex: (b.percentage * 10).round().clamp(1, 1000),
                           child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 0.5),
-                            color: b.category.color,
+                            color: b.category.getEffectiveColor(context),
                           ),
                         );
                       }).toList(),
@@ -93,15 +96,15 @@ class CategoryDistributionBar extends StatelessWidget {
                     width: 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: b.category.color,
+                      color: b.category.getEffectiveColor(context),
                       shape: BoxShape.circle,
                     ),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     b.category.label,
-                    style: AppTypography.labelSm.copyWith(
-                      color: AppColors.textMuted,
+                    style: typography.labelSm.copyWith(
+                      color: colors.textMuted,
                     ),
                   ),
                 ],

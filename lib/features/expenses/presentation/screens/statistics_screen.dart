@@ -17,6 +17,8 @@ class StatisticsScreen extends ConsumerWidget {
     final selectedPeriod = ref.watch(selectedStatsPeriodProvider);
     final stats = ref.watch(periodStatsProvider);
     final now = DateTime.now();
+    final colors = context.colors;
+    final typography = context.typography;
 
     String periodTitle = '';
     String periodSubtitle = '';
@@ -36,12 +38,13 @@ class StatisticsScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
         title: Text(
           'Statistics',
-          style: AppTypography.headlineMd.copyWith(
+          style: typography.headlineMd.copyWith(
             fontWeight: FontWeight.w700,
+            color: colors.ink,
           ),
         ),
       ),
@@ -56,7 +59,7 @@ class StatisticsScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: AppColors.surfaceContainer,
+              color: colors.surfaceContainer,
               borderRadius: BorderRadius.circular(AppDimens.radiusFull),
             ),
             child: Row(
@@ -97,11 +100,11 @@ class StatisticsScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(AppDimens.spaceLg),
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              color: colors.primary,
               borderRadius: BorderRadius.circular(AppDimens.radiusLg),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.35),
+                  color: colors.primary.withValues(alpha: 0.35),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -115,16 +118,16 @@ class StatisticsScreen extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.calendar_today_outlined,
                           size: 16,
-                          color: AppColors.ink,
+                          color: colors.onPrimary,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           periodTitle.toUpperCase(),
-                          style: AppTypography.labelMd.copyWith(
-                            color: AppColors.ink,
+                          style: typography.labelMd.copyWith(
+                            color: colors.onPrimary,
                             letterSpacing: 1.0,
                             fontWeight: FontWeight.w700,
                           ),
@@ -137,7 +140,9 @@ class StatisticsScreen extends ConsumerWidget {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.6),
+                        color: colors.isDark
+                            ? Colors.black.withValues(alpha: 0.15)
+                            : Colors.white.withValues(alpha: 0.6),
                         borderRadius:
                             BorderRadius.circular(AppDimens.radiusFull),
                       ),
@@ -149,14 +154,14 @@ class StatisticsScreen extends ConsumerWidget {
                                 ? Icons.trending_down
                                 : Icons.trending_up,
                             size: 14,
-                            color: AppColors.primaryDark,
+                            color: colors.onPrimary,
                           ),
                           const SizedBox(width: 3),
                           Text(
                             '${stats.percentageChangeFromPrevious.abs().toStringAsFixed(1)}%',
-                            style: AppTypography.labelSm.copyWith(
+                            style: typography.labelSm.copyWith(
                               fontWeight: FontWeight.w700,
-                              color: AppColors.ink,
+                              color: colors.onPrimary,
                             ),
                           ),
                         ],
@@ -167,15 +172,15 @@ class StatisticsScreen extends ConsumerWidget {
                 const SizedBox(height: AppDimens.spaceMd),
                 Text(
                   'Total Period Outflow',
-                  style: AppTypography.labelSm.copyWith(
-                    color: AppColors.ink.withValues(alpha: 0.8),
+                  style: typography.labelSm.copyWith(
+                    color: colors.onPrimary.withValues(alpha: 0.8),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   CurrencyFormatter.format(stats.totalAmount),
-                  style: AppTypography.numericHero.copyWith(
-                    color: AppColors.ink,
+                  style: typography.numericHero.copyWith(
+                    color: colors.onPrimary,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -185,16 +190,16 @@ class StatisticsScreen extends ConsumerWidget {
                     Container(
                       width: 6,
                       height: 6,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.primaryDark,
+                        color: colors.onPrimary.withValues(alpha: 0.7),
                       ),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       '${stats.count} tracked expenses',
-                      style: AppTypography.bodyMd.copyWith(
-                        color: AppColors.ink,
+                      style: typography.bodyMd.copyWith(
+                        color: colors.onPrimary,
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
@@ -210,12 +215,12 @@ class StatisticsScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(AppDimens.spaceLg),
             decoration: BoxDecoration(
-              color: AppColors.surfaceCard,
+              color: colors.surfaceCard,
               borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-              border: Border.all(color: AppColors.borderSubtle, width: 1),
+              border: Border.all(color: colors.borderSubtle, width: 1),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.02),
+                  color: Colors.black.withValues(alpha: colors.isDark ? 0.3 : 0.02),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -228,15 +233,15 @@ class StatisticsScreen extends ConsumerWidget {
                   children: [
                     Text(
                       'Category Distribution',
-                      style: AppTypography.titleSm.copyWith(
+                      style: typography.titleSm.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: AppColors.ink,
+                        color: colors.ink,
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       Icons.donut_large_rounded,
                       size: 20,
-                      color: AppColors.textMuted,
+                      color: colors.textMuted,
                     ),
                   ],
                 ),
@@ -255,7 +260,7 @@ class StatisticsScreen extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceContainerLow,
+                      color: colors.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -263,14 +268,14 @@ class StatisticsScreen extends ConsumerWidget {
                         Container(
                           width: 32,
                           height: 32,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppColors.primary,
+                            color: colors.primary,
                           ),
                           child: Icon(
                             stats.topCategory!.category.icon,
                             size: 18,
-                            color: AppColors.ink,
+                            color: colors.onPrimary,
                           ),
                         ),
                         const SizedBox(width: AppDimens.spaceSm),
@@ -280,15 +285,15 @@ class StatisticsScreen extends ConsumerWidget {
                             children: [
                               Text(
                                 '${stats.topCategory!.category.label} is highest category',
-                                style: AppTypography.labelMd.copyWith(
+                                style: typography.labelMd.copyWith(
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.ink,
+                                  color: colors.ink,
                                 ),
                               ),
                               Text(
                                 '${stats.topCategory!.percentage.toStringAsFixed(0)}% of total period outgoings',
-                                style: AppTypography.labelSm.copyWith(
-                                  color: AppColors.textMuted,
+                                style: typography.labelSm.copyWith(
+                                  color: colors.textMuted,
                                 ),
                               ),
                             ],
@@ -306,9 +311,9 @@ class StatisticsScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(AppDimens.spaceLg),
             decoration: BoxDecoration(
-              color: AppColors.surfaceCard,
+              color: colors.surfaceCard,
               borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-              border: Border.all(color: AppColors.borderSubtle, width: 1),
+              border: Border.all(color: colors.borderSubtle, width: 1),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,15 +323,15 @@ class StatisticsScreen extends ConsumerWidget {
                   children: [
                     Text(
                       'Category Details',
-                      style: AppTypography.titleSm.copyWith(
+                      style: typography.titleSm.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: AppColors.ink,
+                        color: colors.ink,
                       ),
                     ),
                     Text(
                       '${stats.categoryBreakdowns.length} Categories',
-                      style: AppTypography.labelSm.copyWith(
-                        color: AppColors.textMuted,
+                      style: typography.labelSm.copyWith(
+                        color: colors.textMuted,
                       ),
                     ),
                   ],
@@ -337,7 +342,7 @@ class StatisticsScreen extends ConsumerWidget {
                     margin: const EdgeInsets.only(bottom: AppDimens.spaceSm),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceContainerLow,
+                      color: colors.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -347,7 +352,7 @@ class StatisticsScreen extends ConsumerWidget {
                           width: 10,
                           height: 10,
                           decoration: BoxDecoration(
-                            color: item.category.color,
+                            color: item.category.getEffectiveColor(context),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -357,13 +362,13 @@ class StatisticsScreen extends ConsumerWidget {
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceCard,
+                            color: colors.surfaceCard,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
                             item.category.icon,
                             size: 18,
-                            color: AppColors.ink,
+                            color: colors.ink,
                           ),
                         ),
                         const SizedBox(width: AppDimens.spaceSm),
@@ -374,15 +379,16 @@ class StatisticsScreen extends ConsumerWidget {
                             children: [
                               Text(
                                 item.category.fullName,
-                                style: AppTypography.titleSm.copyWith(
+                                style: typography.titleSm.copyWith(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
+                                  color: colors.ink,
                                 ),
                               ),
                               Text(
                                 '${item.count} transactions',
-                                style: AppTypography.labelSm.copyWith(
-                                  color: AppColors.textMuted,
+                                style: typography.labelSm.copyWith(
+                                  color: colors.textMuted,
                                 ),
                               ),
                             ],
@@ -394,17 +400,18 @@ class StatisticsScreen extends ConsumerWidget {
                           children: [
                             Text(
                               CurrencyFormatter.format(item.amount),
-                              style: AppTypography.titleSm.copyWith(
+                              style: typography.titleSm.copyWith(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
+                                color: colors.ink,
                               ),
                             ),
                             Text(
                               '${item.percentage.toStringAsFixed(0)}%',
-                              style: AppTypography.labelSm.copyWith(
+                              style: typography.labelSm.copyWith(
                                 color: item.percentage > 0
-                                    ? AppColors.primaryDark
-                                    : AppColors.textMuted,
+                                    ? colors.primaryDark
+                                    : colors.textMuted,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -423,7 +430,7 @@ class StatisticsScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(AppDimens.spaceMd),
             decoration: BoxDecoration(
-              color: AppColors.surfaceContainerLow,
+              color: colors.surfaceContainerLow,
               borderRadius: BorderRadius.circular(AppDimens.radiusLg),
             ),
             child: Row(
@@ -431,14 +438,14 @@ class StatisticsScreen extends ConsumerWidget {
                 Container(
                   width: 36,
                   height: 36,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.primary,
+                    color: colors.primary,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.verified_outlined,
                     size: 20,
-                    color: AppColors.ink,
+                    color: colors.onPrimary,
                   ),
                 ),
                 const SizedBox(width: AppDimens.spaceSm),
@@ -448,16 +455,16 @@ class StatisticsScreen extends ConsumerWidget {
                     children: [
                       Text(
                         'Budget Pace on Target',
-                        style: AppTypography.labelMd.copyWith(
+                        style: typography.labelMd.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: AppColors.ink,
+                          color: colors.ink,
                         ),
                       ),
                       Text(
                         'You are on track with planned outgoings for $periodSubtitle.',
-                        style: AppTypography.bodyMd.copyWith(
+                        style: typography.bodyMd.copyWith(
                           fontSize: 12,
-                          color: AppColors.textMuted,
+                          color: colors.textMuted,
                         ),
                       ),
                     ],
@@ -486,6 +493,9 @@ class _PeriodTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final typography = context.typography;
+
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -494,12 +504,12 @@ class _PeriodTab extends StatelessWidget {
           curve: Curves.easeInOut,
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : Colors.transparent,
+            color: isSelected ? colors.primary : Colors.transparent,
             borderRadius: BorderRadius.circular(AppDimens.radiusFull),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
+                      color: colors.primary.withValues(alpha: 0.3),
                       blurRadius: 4,
                       offset: const Offset(0, 1),
                     ),
@@ -509,8 +519,8 @@ class _PeriodTab extends StatelessWidget {
           child: Text(
             label,
             textAlign: TextAlign.center,
-            style: AppTypography.labelMd.copyWith(
-              color: isSelected ? AppColors.ink : AppColors.textMuted,
+            style: typography.labelMd.copyWith(
+              color: isSelected ? colors.onPrimary : colors.textMuted,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             ),
           ),

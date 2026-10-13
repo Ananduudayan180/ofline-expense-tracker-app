@@ -9,6 +9,7 @@ import '../widgets/category_distribution_bar.dart';
 import '../widgets/hero_monthly_card.dart';
 import '../widgets/metric_tile.dart';
 import '../widgets/quick_add_bottom_sheet.dart';
+import '../widgets/theme_toggle_button.dart';
 import '../widgets/transaction_list_tile.dart';
 import 'add_expense_screen.dart';
 
@@ -27,21 +28,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final expensesAsync = ref.watch(expenseListProvider);
     final monthStats = ref.watch(currentMonthStatsProvider);
     final todayStats = ref.watch(todayStatsProvider);
+    final colors = context.colors;
+    final typography = context.typography;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
         title: Text(
           'Expense Tracker',
-          style: AppTypography.titleSm.copyWith(
-            color: AppColors.ink,
+          style: typography.titleSm.copyWith(
+            color: colors.ink,
             fontWeight: FontWeight.w600,
           ),
         ),
         actions: [
+          const ThemeToggleButton(),
+          const SizedBox(width: AppDimens.spaceXs),
           IconButton(
             tooltip: 'Add Full Expense',
-            icon: const Icon(Icons.add_circle_outline, color: AppColors.ink),
+            icon: Icon(Icons.add_circle_outline, color: colors.ink),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -50,14 +55,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               );
             },
           ),
+          const SizedBox(width: AppDimens.spaceSm),
         ],
       ),
       body: expensesAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+        loading: () => Center(
+          child: CircularProgressIndicator(color: colors.primary),
         ),
         error: (err, stack) => Center(
-          child: Text('Error loading data: $err'),
+          child: Text(
+            'Error loading data: $err',
+            style: TextStyle(color: colors.error),
+          ),
         ),
         data: (expenses) {
           final displayedTransactions = _showAllTransactions
@@ -67,8 +76,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           return Stack(
             children: [
               RefreshIndicator(
-                color: AppColors.ink,
-                backgroundColor: AppColors.primary,
+                color: colors.onPrimary,
+                backgroundColor: colors.primary,
                 onRefresh: () async {
                   ref.invalidate(expenseListProvider);
                 },
@@ -131,9 +140,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       children: [
                         Text(
                           'Recent Transactions',
-                          style: AppTypography.titleSm.copyWith(
+                          style: typography.titleSm.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: AppColors.ink,
+                            color: colors.ink,
                           ),
                         ),
                         if (expenses.length > 4)
@@ -148,8 +157,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               children: [
                                 Text(
                                   _showAllTransactions ? 'Show less' : 'View all',
-                                  style: AppTypography.labelMd.copyWith(
-                                    color: AppColors.primaryDark,
+                                  style: typography.labelMd.copyWith(
+                                    color: colors.primaryDark,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -158,7 +167,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       ? Icons.keyboard_arrow_up_rounded
                                       : Icons.chevron_right_rounded,
                                   size: 18,
-                                  color: AppColors.primaryDark,
+                                  color: colors.primaryDark,
                                 ),
                               ],
                             ),
@@ -172,29 +181,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       Container(
                         padding: const EdgeInsets.all(AppDimens.spaceXl),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceCard,
+                          color: colors.surfaceCard,
                           borderRadius: BorderRadius.circular(AppDimens.radiusLg),
                           border: Border.all(
-                            color: AppColors.borderSubtle,
+                            color: colors.borderSubtle,
                             width: 1,
                           ),
                         ),
                         child: Column(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.wallet_outlined,
                               size: 48,
-                              color: AppColors.textMuted,
+                              color: colors.textMuted,
                             ),
                             const SizedBox(height: AppDimens.spaceSm),
                             Text(
                               'No transactions yet',
-                              style: AppTypography.titleSm,
+                              style: typography.titleSm,
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Tap + below to add your first expense.',
-                              style: AppTypography.bodyMd,
+                              style: typography.bodyMd,
                             ),
                           ],
                         ),
@@ -202,15 +211,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     else
                       Container(
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceCard,
+                          color: colors.surfaceCard,
                           borderRadius: BorderRadius.circular(AppDimens.radiusLg),
                           border: Border.all(
-                            color: AppColors.borderSubtle,
+                            color: colors.borderSubtle,
                             width: 1,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.02),
+                              color: Colors.black.withValues(alpha: colors.isDark ? 0.3 : 0.02),
                               offset: const Offset(0, 2),
                               blurRadius: 6,
                             ),
@@ -230,11 +239,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 },
                               ),
                               if (i < displayedTransactions.length - 1)
-                                const Divider(
+                                Divider(
                                   height: 1,
                                   indent: AppDimens.spaceMd,
                                   endIndent: AppDimens.spaceMd,
-                                  color: AppColors.surfaceContainerLow,
+                                  color: colors.surfaceContainerLow,
                                 ),
                             ],
                           ],
@@ -250,14 +259,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 bottom: AppDimens.spaceLg,
                 child: FloatingActionButton(
                   heroTag: 'home_fab',
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.ink,
+                  backgroundColor: colors.primary,
+                  foregroundColor: colors.onPrimary,
                   elevation: 6,
                   shape: const CircleBorder(),
                   onPressed: () {
                     QuickAddBottomSheet.show(context);
                   },
-                  child: const Icon(Icons.add, size: 28, color: AppColors.ink),
+                  child: Icon(Icons.add, size: 28, color: colors.onPrimary),
                 ),
               ),
             ],

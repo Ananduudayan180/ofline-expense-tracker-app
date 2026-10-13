@@ -20,6 +20,9 @@ class TransactionListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final typography = context.typography;
+
     return Dismissible(
       key: Key(expense.id),
       direction: onDelete != null
@@ -28,7 +31,7 @@ class TransactionListTile extends StatelessWidget {
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: AppDimens.spaceLg),
-        color: AppColors.error,
+        color: colors.error,
         child: const Icon(Icons.delete_outline, color: Colors.white),
       ),
       onDismissed: (_) {
@@ -36,8 +39,8 @@ class TransactionListTile extends StatelessWidget {
       },
       child: InkWell(
         onTap: onTap,
-        splashColor: AppColors.primary.withValues(alpha: 0.1),
-        highlightColor: AppColors.surfaceContainerLow,
+        splashColor: colors.primary.withValues(alpha: 0.1),
+        highlightColor: colors.surfaceContainerLow,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimens.spaceMd,
@@ -50,13 +53,13 @@ class TransactionListTile extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerLow,
+                  color: colors.surfaceContainerLow,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   expense.category.icon,
                   size: 22,
-                  color: AppColors.ink,
+                  color: colors.ink,
                 ),
               ),
               const SizedBox(width: AppDimens.spaceMd),
@@ -68,9 +71,9 @@ class TransactionListTile extends StatelessWidget {
                   children: [
                     Text(
                       expense.title,
-                      style: AppTypography.titleSm.copyWith(
+                      style: typography.titleSm.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.ink,
+                        color: colors.ink,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -78,8 +81,8 @@ class TransactionListTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       '${DateFormatter.formatDisplayDate(expense.dateTime)} • ${expense.category.label}',
-                      style: AppTypography.bodyMd.copyWith(
-                        color: AppColors.textMuted,
+                      style: typography.bodyMd.copyWith(
+                        color: colors.textMuted,
                         fontSize: 13,
                       ),
                       maxLines: 1,
@@ -93,9 +96,9 @@ class TransactionListTile extends StatelessWidget {
               // Amount
               Text(
                 '-${CurrencyFormatter.format(expense.amount)}',
-                style: AppTypography.titleSm.copyWith(
+                style: typography.titleSm.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppColors.ink,
+                  color: colors.ink,
                 ),
               ),
             ],

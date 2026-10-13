@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import 'home_screen.dart';
 import 'statistics_screen.dart';
@@ -21,6 +22,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: context.colors.background,
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,

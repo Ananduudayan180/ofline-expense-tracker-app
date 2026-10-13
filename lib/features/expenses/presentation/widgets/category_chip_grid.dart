@@ -16,6 +16,9 @@ class CategoryChipGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final typography = context.typography;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -24,15 +27,15 @@ class CategoryChipGrid extends StatelessWidget {
           children: [
             Text(
               'Category',
-              style: AppTypography.labelMd.copyWith(
-                color: AppColors.ink,
+              style: typography.labelMd.copyWith(
+                color: colors.ink,
                 fontWeight: FontWeight.w600,
               ),
             ),
             Text(
               selectedCategory.fullName,
-              style: AppTypography.labelSm.copyWith(
-                color: AppColors.primaryDark,
+              style: typography.labelSm.copyWith(
+                color: colors.primaryDark,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -54,20 +57,20 @@ class CategoryChipGrid extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.primary
-                          : AppColors.surfaceCard,
+                          ? colors.primary
+                          : colors.surfaceCard,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected
-                            ? AppColors.primary
-                            : AppColors.borderSubtle,
+                            ? colors.primary
+                            : colors.borderSubtle,
                         width: 1,
                       ),
                       boxShadow: [
                         BoxShadow(
                           color: isSelected
-                              ? AppColors.primary.withValues(alpha: 0.3)
-                              : Colors.black.withValues(alpha: 0.02),
+                              ? colors.primary.withValues(alpha: 0.3)
+                              : Colors.black.withValues(alpha: colors.isDark ? 0.2 : 0.02),
                           offset: const Offset(0, 2),
                           blurRadius: 4,
                         ),
@@ -81,21 +84,23 @@ class CategoryChipGrid extends StatelessWidget {
                           height: 36,
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? Colors.white.withValues(alpha: 0.8)
-                                : AppColors.surfaceContainerLow,
+                                ? (colors.isDark
+                                    ? Colors.black.withValues(alpha: 0.15)
+                                    : Colors.white.withValues(alpha: 0.8))
+                                : colors.surfaceContainerLow,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
                             cat.icon,
                             size: 20,
-                            color: AppColors.ink,
+                            color: isSelected ? colors.onPrimary : colors.ink,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           cat.label,
-                          style: AppTypography.labelSm.copyWith(
-                            color: AppColors.ink,
+                          style: typography.labelSm.copyWith(
+                            color: isSelected ? colors.onPrimary : colors.ink,
                             fontWeight: isSelected
                                 ? FontWeight.w700
                                 : FontWeight.w500,

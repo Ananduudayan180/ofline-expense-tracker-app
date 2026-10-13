@@ -45,6 +45,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
   Future<void> _pickDate() async {
     final addState = ref.read(addExpenseNotifierProvider);
+    final colors = context.colors;
     final picked = await showDatePicker(
       context: context,
       initialDate: addState.date,
@@ -53,11 +54,16 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.ink,
-              onPrimary: Colors.white,
-              surface: AppColors.surfaceCard,
-              onSurface: AppColors.ink,
+            colorScheme: ColorScheme(
+              brightness: colors.isDark ? Brightness.dark : Brightness.light,
+              primary: colors.primary,
+              onPrimary: colors.onPrimary,
+              surface: colors.surfaceCard,
+              onSurface: colors.ink,
+              error: colors.error,
+              onError: Colors.white,
+              secondary: colors.ink,
+              onSecondary: colors.background,
             ),
           ),
           child: child!,
@@ -72,12 +78,13 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
   Future<void> _handleSave() async {
     final state = ref.read(addExpenseNotifierProvider);
+    final colors = context.colors;
     if (state.amount <= 0) {
       HapticFeedback.mediumImpact();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter an amount greater than 0.'),
-          backgroundColor: AppColors.error,
+        SnackBar(
+          content: const Text('Please enter an amount greater than 0.'),
+          backgroundColor: colors.error,
         ),
       );
       return;
@@ -94,32 +101,32 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimens.radiusMd),
           ),
-          backgroundColor: AppColors.ink,
+          backgroundColor: colors.surfaceCard,
           content: Row(
             children: [
               Container(
                 width: 24,
                 height: 24,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary,
+                  color: colors.primary,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.check,
                   size: 16,
-                  color: AppColors.ink,
+                  color: colors.onPrimary,
                 ),
               ),
               const SizedBox(width: AppDimens.spaceSm),
               Expanded(
                 child: Text(
                   'Expense Logged • ${expense.category.label} (${CurrencyFormatter.format(expense.amount)})',
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: TextStyle(color: colors.ink, fontSize: 13),
                 ),
               ),
-              const Text(
+              Text(
                 'Offline ready',
-                style: TextStyle(color: AppColors.primaryDim, fontSize: 11),
+                style: TextStyle(color: colors.primaryDark, fontSize: 11),
               ),
             ],
           ),
@@ -132,18 +139,21 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   Widget build(BuildContext context) {
     final addState = ref.watch(addExpenseNotifierProvider);
     final notifier = ref.read(addExpenseNotifierProvider.notifier);
+    final colors = context.colors;
+    final typography = context.typography;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.ink),
+          icon: Icon(Icons.arrow_back, color: colors.ink),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           'Add Expense',
-          style: AppTypography.headlineMd.copyWith(
+          style: typography.headlineMd.copyWith(
             fontWeight: FontWeight.w700,
+            color: colors.ink,
           ),
         ),
       ),
@@ -163,12 +173,12 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                   horizontal: AppDimens.spaceMd,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceCard,
+                  color: colors.surfaceCard,
                   borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-                  border: Border.all(color: AppColors.borderSubtle, width: 1),
+                  border: Border.all(color: colors.borderSubtle, width: 1),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
+                      color: Colors.black.withValues(alpha: colors.isDark ? 0.3 : 0.02),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -178,8 +188,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                   children: [
                     Text(
                       'EXPENSE TOTAL',
-                      style: AppTypography.labelMd.copyWith(
-                        color: AppColors.textMuted,
+                      style: typography.labelMd.copyWith(
+                        color: colors.textMuted,
                         letterSpacing: 1.0,
                         fontWeight: FontWeight.w600,
                       ),
@@ -192,8 +202,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                       children: [
                         Text(
                           CurrencyFormatter.defaultSymbol,
-                          style: AppTypography.numericHero.copyWith(
-                            color: AppColors.textMuted,
+                          style: typography.numericHero.copyWith(
+                            color: colors.textMuted,
                           ),
                         ),
                         const SizedBox(width: 4),
@@ -203,8 +213,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
-                            style: AppTypography.numericHero.copyWith(
-                              color: AppColors.ink,
+                            style: typography.numericHero.copyWith(
+                              color: colors.ink,
                               fontWeight: FontWeight.w800,
                             ),
                             decoration: const InputDecoration(
@@ -281,17 +291,17 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
               Container(
                 padding: const EdgeInsets.all(AppDimens.spaceMd),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceCard,
+                  color: colors.surfaceCard,
                   borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-                  border: Border.all(color: AppColors.borderSubtle, width: 1),
+                  border: Border.all(color: colors.borderSubtle, width: 1),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Transaction Date',
-                      style: AppTypography.labelSm.copyWith(
-                        color: AppColors.textMuted,
+                      style: typography.labelSm.copyWith(
+                        color: colors.textMuted,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -303,7 +313,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceContainerLow,
+                          color: colors.surfaceContainerLow,
                           borderRadius: BorderRadius.circular(AppDimens.radiusMd),
                         ),
                         child: Row(
@@ -314,30 +324,31 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                                 Container(
                                   width: 32,
                                   height: 32,
-                                  decoration: const BoxDecoration(
+                                  decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: AppColors.surfaceContainer,
+                                    color: colors.surfaceContainer,
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.calendar_today_outlined,
                                     size: 16,
-                                    color: AppColors.ink,
+                                    color: colors.ink,
                                   ),
                                 ),
                                 const SizedBox(width: AppDimens.spaceSm),
                                 Text(
                                   DateFormatter.formatFullDate(addState.date),
-                                  style: AppTypography.titleSm.copyWith(
+                                  style: typography.titleSm.copyWith(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
+                                    color: colors.ink,
                                   ),
                                 ),
                               ],
                             ),
-                            const Icon(
+                            Icon(
                               Icons.expand_more_rounded,
                               size: 20,
-                              color: AppColors.textMuted,
+                              color: colors.textMuted,
                             ),
                           ],
                         ),
@@ -351,14 +362,14 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                       children: [
                         Text(
                           'Note',
-                          style: AppTypography.labelSm.copyWith(
-                            color: AppColors.textMuted,
+                          style: typography.labelSm.copyWith(
+                            color: colors.textMuted,
                           ),
                         ),
                         Text(
                           '${addState.note.length}/60',
-                          style: AppTypography.labelSm.copyWith(
-                            color: AppColors.textMuted,
+                          style: typography.labelSm.copyWith(
+                            color: colors.textMuted,
                           ),
                         ),
                       ],
@@ -366,6 +377,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                     const SizedBox(height: 6),
                     TextField(
                       controller: _noteController,
+                      style: TextStyle(color: colors.ink),
                       onChanged: (val) => notifier.setNote(val),
                       maxLength: 60,
                       buildCounter: (context,
@@ -375,11 +387,11 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                           null,
                       decoration: InputDecoration(
                         hintText: 'Add a note (optional)',
-                        hintStyle: AppTypography.bodyMd.copyWith(
-                          color: AppColors.textMuted,
+                        hintStyle: typography.bodyMd.copyWith(
+                          color: colors.textMuted,
                         ),
                         filled: true,
-                        fillColor: AppColors.surfaceContainerLow,
+                        fillColor: colors.surfaceContainerLow,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 14,
                           vertical: 12,
@@ -399,8 +411,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
               ElevatedButton(
                 onPressed: _handleSave,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.ink,
+                  backgroundColor: colors.primary,
+                  foregroundColor: colors.onPrimary,
                   elevation: 2,
                   minimumSize: const Size(double.infinity, 54),
                   shape: RoundedRectangleBorder(
@@ -410,13 +422,13 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.check, size: 22, color: AppColors.ink),
+                    Icon(Icons.check, size: 22, color: colors.onPrimary),
                     const SizedBox(width: AppDimens.spaceSm),
                     Text(
                       'Save Expense',
-                      style: AppTypography.titleSm.copyWith(
+                      style: typography.titleSm.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: AppColors.ink,
+                        color: colors.onPrimary,
                         fontSize: 16,
                       ),
                     ),
@@ -445,29 +457,32 @@ class _PresetButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final typography = context.typography;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLow,
+          color: colors.surfaceContainerLow,
           borderRadius: BorderRadius.circular(AppDimens.radiusFull),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (isClear) ...[
-              const Icon(
+              Icon(
                 Icons.backspace_outlined,
                 size: 13,
-                color: AppColors.error,
+                color: colors.error,
               ),
               const SizedBox(width: 4),
             ],
             Text(
               label,
-              style: AppTypography.labelSm.copyWith(
-                color: isClear ? AppColors.error : AppColors.ink,
+              style: typography.labelSm.copyWith(
+                color: isClear ? colors.error : colors.ink,
                 fontWeight: FontWeight.w600,
               ),
             ),

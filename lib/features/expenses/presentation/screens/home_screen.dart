@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_dimens.dart';
 import '../../../../core/constants/app_typography.dart';
@@ -8,10 +9,9 @@ import '../providers/expense_providers.dart';
 import '../widgets/category_distribution_bar.dart';
 import '../widgets/hero_monthly_card.dart';
 import '../widgets/metric_tile.dart';
-import '../widgets/quick_add_bottom_sheet.dart';
+import 'add_expense_bottom_sheet.dart';
 import '../widgets/theme_toggle_button.dart';
 import '../widgets/transaction_list_tile.dart';
-import 'add_expense_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -43,25 +43,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         actions: [
           const ThemeToggleButton(),
-          const SizedBox(width: AppDimens.spaceXs),
-          IconButton(
-            tooltip: 'Add Full Expense',
-            icon: Icon(Icons.add_circle_outline, color: colors.ink),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AddExpenseScreen(),
-                ),
-              );
-            },
-          ),
           const SizedBox(width: AppDimens.spaceSm),
         ],
       ),
       body: expensesAsync.when(
-        loading: () => Center(
-          child: CircularProgressIndicator(color: colors.primary),
-        ),
+        loading: () =>
+            Center(child: CircularProgressIndicator(color: colors.primary)),
         error: (err, stack) => Center(
           child: Text(
             'Error loading data: $err',
@@ -130,7 +117,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     // Category Distribution Bar
                     CategoryDistributionBar(
                       breakdowns: monthStats.categoryBreakdowns,
-                      topCategoryName: monthStats.topCategory?.category.fullName,
+                      topCategoryName:
+                          monthStats.topCategory?.category.fullName,
                     ),
                     const SizedBox(height: AppDimens.spaceLg),
 
@@ -156,7 +144,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  _showAllTransactions ? 'Show less' : 'View all',
+                                  _showAllTransactions
+                                      ? 'Show less'
+                                      : 'View all',
                                   style: typography.labelMd.copyWith(
                                     color: colors.primaryDark,
                                     fontWeight: FontWeight.w700,
@@ -182,7 +172,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         padding: const EdgeInsets.all(AppDimens.spaceXl),
                         decoration: BoxDecoration(
                           color: colors.surfaceCard,
-                          borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+                          borderRadius: BorderRadius.circular(
+                            AppDimens.radiusLg,
+                          ),
                           border: Border.all(
                             color: colors.borderSubtle,
                             width: 1,
@@ -212,14 +204,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       Container(
                         decoration: BoxDecoration(
                           color: colors.surfaceCard,
-                          borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+                          borderRadius: BorderRadius.circular(
+                            AppDimens.radiusLg,
+                          ),
                           border: Border.all(
                             color: colors.borderSubtle,
                             width: 1,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: colors.isDark ? 0.3 : 0.02),
+                              color: Colors.black.withValues(
+                                alpha: colors.isDark ? 0.3 : 0.02,
+                              ),
                               offset: const Offset(0, 2),
                               blurRadius: 6,
                             ),
@@ -227,15 +223,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                         child: Column(
                           children: [
-                            for (int i = 0;
-                                i < displayedTransactions.length;
-                                i++) ...[
+                            for (
+                              int i = 0;
+                              i < displayedTransactions.length;
+                              i++
+                            ) ...[
                               TransactionListTile(
                                 expense: displayedTransactions[i],
                                 onDelete: () {
                                   ref
                                       .read(expenseListProvider.notifier)
-                                      .deleteExpense(displayedTransactions[i].id);
+                                      .deleteExpense(
+                                        displayedTransactions[i].id,
+                                      );
                                 },
                               ),
                               if (i < displayedTransactions.length - 1)
@@ -264,7 +264,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   elevation: 6,
                   shape: const CircleBorder(),
                   onPressed: () {
-                    QuickAddBottomSheet.show(context);
+                    AddExpenseBottomSheet.show(context);
                   },
                   child: Icon(Icons.add, size: 28, color: colors.onPrimary),
                 ),

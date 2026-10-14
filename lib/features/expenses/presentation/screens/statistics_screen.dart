@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_dimens.dart';
 import '../../../../core/constants/app_typography.dart';
@@ -143,8 +144,9 @@ class StatisticsScreen extends ConsumerWidget {
                         color: colors.isDark
                             ? Colors.black.withValues(alpha: 0.15)
                             : Colors.white.withValues(alpha: 0.6),
-                        borderRadius:
-                            BorderRadius.circular(AppDimens.radiusFull),
+                        borderRadius: BorderRadius.circular(
+                          AppDimens.radiusFull,
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -220,7 +222,9 @@ class StatisticsScreen extends ConsumerWidget {
               border: Border.all(color: colors.borderSubtle, width: 1),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: colors.isDark ? 0.3 : 0.02),
+                  color: Colors.black.withValues(
+                    alpha: colors.isDark ? 0.3 : 0.02,
+                  ),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),

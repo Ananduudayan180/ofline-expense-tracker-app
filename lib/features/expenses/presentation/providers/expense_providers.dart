@@ -39,6 +39,19 @@ class ExpenseListNotifier extends AsyncNotifier<List<Expense>> {
     }
   }
 
+  Future<void> updateExpense(Expense expense) async {
+    final previousState = state;
+    try {
+      final repository = ref.read(expenseRepositoryProvider);
+      await repository.updateExpense(expense);
+      final updated = await repository.getAllExpenses();
+      state = AsyncData(updated);
+    } catch (_) {
+      state = previousState;
+      rethrow;
+    }
+  }
+
   Future<void> deleteExpense(String id) async {
     final previousState = state;
     try {

@@ -10,6 +10,7 @@ import '../widgets/category_distribution_bar.dart';
 import '../widgets/hero_monthly_card.dart';
 import '../widgets/metric_tile.dart';
 import 'add_expense_bottom_sheet.dart';
+import 'edit_expense_bottom_sheet.dart';
 import '../widgets/theme_toggle_button.dart';
 import '../widgets/transaction_list_tile.dart';
 
@@ -228,6 +229,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ) ...[
                               TransactionListTile(
                                 expense: displayedTransactions[i],
+                                onTap: () {
+                                  EditExpenseBottomSheet.show(
+                                    context,
+                                    displayedTransactions[i],
+                                  );
+                                },
+                                onEdit: () {
+                                  EditExpenseBottomSheet.show(
+                                    context,
+                                    displayedTransactions[i],
+                                  );
+                                },
                                 onDelete: () {
                                   ref
                                       .read(expenseListProvider.notifier)

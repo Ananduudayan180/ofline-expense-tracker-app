@@ -10,12 +10,14 @@ class TransactionListTile extends StatelessWidget {
   final Expense expense;
   final VoidCallback? onTap;
   final VoidCallback? onDelete;
+  final VoidCallback? onEdit;
 
   const TransactionListTile({
     super.key,
     required this.expense,
     this.onTap,
     this.onDelete,
+    this.onEdit,
   });
 
   @override
@@ -25,17 +27,36 @@ class TransactionListTile extends StatelessWidget {
 
     return Dismissible(
       key: Key(expense.id),
-      direction: onDelete != null
-          ? DismissDirection.endToStart
+      direction: (onDelete != null || onEdit != null)
+          ? DismissDirection.horizontal
           : DismissDirection.none,
+      // Left→right: Edit (blue)
       background: Container(
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: AppDimens.spaceLg),
+        color: Colors.blue.shade600,
+        child: const Icon(Icons.edit_outlined, color: Colors.white),
+      ),
+      // Right→left: Delete (red)
+      secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: AppDimens.spaceLg),
         color: colors.error,
         child: const Icon(Icons.delete_outline, color: Colors.white),
       ),
-      onDismissed: (_) {
-        onDelete?.call();
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.startToEnd) {
+          // Trigger edit and cancel the dismiss so the tile stays in the list
+          onEdit?.call();
+          return false;
+        }
+        // endToStart = delete: confirm and let it proceed
+        return onDelete != null;
+      },
+      onDismissed: (direction) {
+        if (direction == DismissDirection.endToStart) {
+          onDelete?.call();
+        }
       },
       child: InkWell(
         onTap: onTap,

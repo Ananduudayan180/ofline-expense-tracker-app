@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+
 import '../../domain/entities/expense.dart';
 import '../../domain/entities/expense_category.dart';
 
@@ -22,10 +23,10 @@ class AddExpenseState {
 
   factory AddExpenseState.initial() {
     return AddExpenseState(
-      amount: 24.50,
-      rawAmountInput: '24.50',
+      amount: 0.0,
+      rawAmountInput: '',
       category: ExpenseCategory.fromType(ExpenseCategoryType.food),
-      date: DateTime.now(),
+      date: DateTime.now().toLocal(),
       note: '',
     );
   }
@@ -80,6 +81,10 @@ class AddExpenseNotifier extends Notifier<AddExpenseState> {
     state = state.copyWith(date: date);
   }
 
+  void selectDateTime(DateTime dateTime) {
+    state = state.copyWith(date: dateTime);
+  }
+
   void setNote(String note) {
     state = state.copyWith(note: note);
   }
@@ -105,4 +110,6 @@ class AddExpenseNotifier extends Notifier<AddExpenseState> {
 }
 
 final addExpenseNotifierProvider =
-    NotifierProvider<AddExpenseNotifier, AddExpenseState>(AddExpenseNotifier.new);
+    NotifierProvider<AddExpenseNotifier, AddExpenseState>(
+      AddExpenseNotifier.new,
+    );

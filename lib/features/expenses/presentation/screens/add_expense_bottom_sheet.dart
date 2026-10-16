@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'dart:math' as math;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_dimens.dart';
@@ -31,6 +35,7 @@ class AddExpenseBottomSheet extends ConsumerStatefulWidget {
 class _AddExpenseBottomSheetState extends ConsumerState<AddExpenseBottomSheet> {
   late TextEditingController _amountController;
   late TextEditingController _noteController;
+  bool _showEnterAmountHint = false;
 
   @override
   void initState() {
@@ -38,6 +43,15 @@ class _AddExpenseBottomSheetState extends ConsumerState<AddExpenseBottomSheet> {
     final addState = ref.read(addExpenseNotifierProvider);
     _amountController = TextEditingController(text: addState.rawAmountInput);
     _noteController = TextEditingController(text: addState.note);
+    // Defer provider mutation to after the widget tree is done building.
+    // Modifying a provider synchronously in initState causes a Riverpod error.
+    Future.microtask(() {
+      if (mounted) {
+        ref
+            .read(addExpenseNotifierProvider.notifier)
+            .selectDate(DateTime.now().toLocal());
+      }
+    });
   }
 
   @override
@@ -54,50 +68,163 @@ class _AddExpenseBottomSheetState extends ConsumerState<AddExpenseBottomSheet> {
     );
   }
 
-  Future<void> _pickDate() async {
+  Future<void> _pickDateTime() async {
     final addState = ref.read(addExpenseNotifierProvider);
     final colors = context.colors;
-    final picked = await showDatePicker(
+    final typography = context.typography;
+
+    DateTime tempDate = addState.date;
+    TimeOfDay tempTime = TimeOfDay.fromDateTime(addState.date);
+
+    final ThemeData dialogTheme = Theme.of(context).copyWith(
+      colorScheme: ColorScheme(
+        brightness: colors.isDark ? Brightness.dark : Brightness.light,
+        primary: colors.primary,
+        onPrimary: colors.onPrimary,
+        surface: colors.surfaceCard,
+        onSurface: colors.ink,
+        error: colors.error,
+        onError: Colors.white,
+        secondary: colors.ink,
+        onSecondary: colors.background,
+      ),
+    );
+
+    await showDialog<void>(
       context: context,
-      initialDate: addState.date,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme(
-              brightness: colors.isDark ? Brightness.dark : Brightness.light,
-              primary: colors.primary,
-              onPrimary: colors.onPrimary,
-              surface: colors.surfaceCard,
-              onSurface: colors.ink,
-              error: colors.error,
-              onError: Colors.white,
-              secondary: colors.ink,
-              onSecondary: colors.background,
-            ),
-          ),
-          child: child!,
+      builder: (dialogCtx) {
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            return Theme(
+              data: dialogTheme,
+              child: AlertDialog(
+                backgroundColor: colors.surfaceCard,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+                ),
+                title: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: colors.primary.withValues(alpha: 0.18),
+                      ),
+                      child: Icon(
+                        Icons.edit_calendar_outlined,
+                        size: 16,
+                        color: colors.primaryDark,
+                      ),
+                    ),
+                    const SizedBox(width: AppDimens.spaceSm),
+                    Text(
+                      'Date & Time',
+                      style: typography.titleSm.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colors.ink,
+                      ),
+                    ),
+                  ],
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _DateTimeRow(
+                      icon: Icons.calendar_today_outlined,
+                      label: 'Date',
+                      value: DateFormat('EEE, MMM d, yyyy').format(tempDate),
+                      colors: colors,
+                      typography: typography,
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: ctx,
+                          initialDate: tempDate,
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime.now().add(
+                            const Duration(days: 365),
+                          ),
+                        );
+                        if (picked != null) {
+                          setDialogState(() {
+                            tempDate = DateTime(
+                              picked.year,
+                              picked.month,
+                              picked.day,
+                              tempTime.hour,
+                              tempTime.minute,
+                            );
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: AppDimens.spaceSm),
+                    _DateTimeRow(
+                      icon: Icons.access_time_rounded,
+                      label: 'Time',
+                      value: tempTime.format(ctx),
+                      colors: colors,
+                      typography: typography,
+                      onTap: () async {
+                        final picked = await showTimePicker(
+                          context: ctx,
+                          initialTime: tempTime,
+                        );
+                        if (picked != null) {
+                          setDialogState(() {
+                            tempTime = picked;
+                            tempDate = DateTime(
+                              tempDate.year,
+                              tempDate.month,
+                              tempDate.day,
+                              picked.hour,
+                              picked.minute,
+                            );
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogCtx).pop(),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(color: colors.textMuted),
+                    ),
+                  ),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: colors.primary,
+                      foregroundColor: colors.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+                      ),
+                    ),
+                    onPressed: () {
+                      ref
+                          .read(addExpenseNotifierProvider.notifier)
+                          .selectDateTime(tempDate);
+                      Navigator.of(dialogCtx).pop();
+                    },
+                    child: const Text('Save'),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );
-
-    if (picked != null) {
-      ref.read(addExpenseNotifierProvider.notifier).selectDate(picked);
-    }
   }
 
   Future<void> _handleSave() async {
     final state = ref.read(addExpenseNotifierProvider);
-    final colors = context.colors;
     if (state.amount <= 0) {
       HapticFeedback.mediumImpact();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please enter an amount greater than 0.'),
-          backgroundColor: colors.error,
-        ),
-      );
+      setState(() => _showEnterAmountHint = true);
       return;
     }
 
@@ -109,39 +236,42 @@ class _AddExpenseBottomSheetState extends ConsumerState<AddExpenseBottomSheet> {
 
     if (mounted) {
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-          ),
-          backgroundColor: colors.surfaceCard,
-          content: Row(
-            children: [
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colors.primary,
+      final colors = context.colors;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+            ),
+            backgroundColor: colors.surfaceCard,
+            content: Row(
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: colors.primary,
+                  ),
+                  child: Icon(Icons.check, size: 16, color: colors.onPrimary),
                 ),
-                child: Icon(Icons.check, size: 16, color: colors.onPrimary),
-              ),
-              const SizedBox(width: AppDimens.spaceSm),
-              Expanded(
-                child: Text(
-                  'Expense Logged • ${expense.category.label} (${CurrencyFormatter.format(expense.amount)})',
-                  style: TextStyle(color: colors.ink, fontSize: 13),
+                const SizedBox(width: AppDimens.spaceSm),
+                Expanded(
+                  child: Text(
+                    'Expense Logged • ${expense.category.label} (${CurrencyFormatter.format(expense.amount)})',
+                    style: TextStyle(color: colors.ink, fontSize: 13),
+                  ),
                 ),
-              ),
-              Text(
-                'Offline ready',
-                style: TextStyle(color: colors.primaryDark, fontSize: 11),
-              ),
-            ],
+                Text(
+                  'Offline ready',
+                  style: TextStyle(color: colors.primaryDark, fontSize: 11),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
+        );
     }
   }
 
@@ -256,40 +386,74 @@ class _AddExpenseBottomSheetState extends ConsumerState<AddExpenseBottomSheet> {
                     ),
                   ),
                   const SizedBox(height: AppDimens.spaceSm),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text(
-                        CurrencyFormatter.defaultSymbol,
-                        style: typography.numericHero.copyWith(
-                          color: colors.textMuted,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      IntrinsicWidth(
-                        child: TextField(
-                          controller: _amountController,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Reserve space for the currency symbol + gap (≈ 30 px)
+                      // and leave at least 8 px margin on each side.
+                      final maxFieldWidth = math.max(
+                        constraints.maxWidth - 46,
+                        80.0,
+                      );
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Text(
+                            CurrencyFormatter.defaultSymbol,
+                            style: typography.numericHero.copyWith(
+                              color: colors.textMuted,
+                            ),
                           ),
-                          style: typography.numericHero.copyWith(
-                            color: colors.ink,
-                            fontWeight: FontWeight.w800,
+                          const SizedBox(width: 4),
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: maxFieldWidth,
+                              minWidth: 48,
+                            ),
+                            child: IntrinsicWidth(
+                              child: TextField(
+                                controller: _amountController,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                                // Limit raw character input to prevent extreme lengths
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d{0,9}(\.\d{0,2})?'),
+                                  ),
+                                ],
+                                style: typography.numericHero.copyWith(
+                                  color: colors.ink,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: '0.00',
+                                  hintStyle: typography.numericHero.copyWith(
+                                    color: colors.textMuted,
+                                  ),
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                                onChanged: (val) {
+                                  notifier.setAmountFromInput(val);
+                                  if (_showEnterAmountHint) {
+                                    final parsed = double.tryParse(val) ?? 0.0;
+                                    if (parsed > 0) {
+                                      setState(
+                                        () => _showEnterAmountHint = false,
+                                      );
+                                    }
+                                  }
+                                },
+                              ),
+                            ),
                           ),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: '0.00',
-                            isDense: true,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                          onChanged: (val) {
-                            notifier.setAmountFromInput(val);
-                          },
-                        ),
-                      ),
-                    ],
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: AppDimens.spaceMd),
 
@@ -313,7 +477,7 @@ class _AddExpenseBottomSheetState extends ConsumerState<AddExpenseBottomSheet> {
             ),
             const SizedBox(height: AppDimens.spaceLg),
 
-            // Date & Note Group Card
+            // Date & Time + Note Group Card
             Container(
               padding: const EdgeInsets.all(AppDimens.spaceMd),
               decoration: BoxDecoration(
@@ -325,12 +489,12 @@ class _AddExpenseBottomSheetState extends ConsumerState<AddExpenseBottomSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Transaction Date',
+                    'Date & Time',
                     style: typography.labelSm.copyWith(color: colors.textMuted),
                   ),
                   const SizedBox(height: 6),
                   GestureDetector(
-                    onTap: _pickDate,
+                    onTap: _pickDateTime,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
@@ -353,19 +517,31 @@ class _AddExpenseBottomSheetState extends ConsumerState<AddExpenseBottomSheet> {
                                   color: colors.surfaceContainer,
                                 ),
                                 child: Icon(
-                                  Icons.calendar_today_outlined,
+                                  Icons.edit_calendar_outlined,
                                   size: 16,
                                   color: colors.ink,
                                 ),
                               ),
                               const SizedBox(width: AppDimens.spaceSm),
-                              Text(
-                                DateFormatter.formatFullDate(addState.date),
-                                style: typography.titleSm.copyWith(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: colors.ink,
-                                ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    DateFormatter.formatFullDate(addState.date),
+                                    style: typography.titleSm.copyWith(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: colors.ink,
+                                    ),
+                                  ),
+                                  Text(
+                                    DateFormat('h:mm a').format(addState.date),
+                                    style: typography.labelSm.copyWith(
+                                      color: colors.textMuted,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -402,6 +578,8 @@ class _AddExpenseBottomSheetState extends ConsumerState<AddExpenseBottomSheet> {
                   TextField(
                     controller: _noteController,
                     style: TextStyle(color: colors.ink),
+                    minLines: 1,
+                    maxLines: 2,
                     onChanged: (val) => notifier.setNote(val),
                     maxLength: 60,
                     buildCounter: (
@@ -432,35 +610,155 @@ class _AddExpenseBottomSheetState extends ConsumerState<AddExpenseBottomSheet> {
             ),
             const SizedBox(height: AppDimens.spaceLg),
 
-            // Save Button
-            ElevatedButton(
-              onPressed: _handleSave,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colors.primary,
-                foregroundColor: colors.onPrimary,
-                elevation: 2,
-                minimumSize: const Size(double.infinity, 54),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.check, size: 22, color: colors.onPrimary),
-                  const SizedBox(width: AppDimens.spaceSm),
-                  Text(
-                    'Save Expense',
-                    style: typography.titleSm.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: colors.onPrimary,
-                      fontSize: 16,
+            // Save Button – dynamic label + polished shadow
+            Builder(
+              builder: (context) {
+                final hasAmount = addState.amount > 0 || !_showEnterAmountHint;
+                final btnBg = hasAmount
+                    ? colors.primary
+                    : colors.surfaceContainerHigh;
+                final btnFg = hasAmount ? colors.onPrimary : colors.error;
+                final shadowColor = hasAmount
+                    ? colors.primary.withValues(alpha: 0.35)
+                    : Colors.transparent;
+
+                return Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(AppDimens.radiusLg),
+                    boxShadow: [
+                      BoxShadow(
+                        color: shadowColor,
+                        blurRadius: 18,
+                        spreadRadius: 0,
+                        offset: const Offset(0, 5),
+                      ),
+                      BoxShadow(
+                        color: hasAmount
+                            ? colors.primary.withValues(alpha: 0.12)
+                            : Colors.transparent,
+                        blurRadius: 32,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    transitionBuilder: (child, anim) =>
+                        FadeTransition(opacity: anim, child: child),
+                    child: ElevatedButton(
+                      key: ValueKey(hasAmount),
+                      onPressed: _handleSave,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: btnBg,
+                        foregroundColor: btnFg,
+                        elevation: 0,
+                        minimumSize: const Size(double.infinity, 54),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppDimens.radiusLg,
+                          ),
+                          side: hasAmount
+                              ? BorderSide.none
+                              : BorderSide(
+                                  color: colors.error.withValues(alpha: 0.35),
+                                  width: 1.5,
+                                ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            hasAmount
+                                ? Icons.check_rounded
+                                : Icons.warning_amber_rounded,
+                            size: 20,
+                            color: btnFg,
+                          ),
+                          const SizedBox(width: AppDimens.spaceSm),
+                          Text(
+                            hasAmount ? 'Save Expense' : 'Enter Amount',
+                            style: typography.titleSm.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: btnFg,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ],
-              ),
+                );
+              },
             ),
             const SizedBox(height: AppDimens.spaceSm),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Helper widget for the date/time dialog rows ──────────────────────────────
+
+class _DateTimeRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final AppColorPalette colors;
+  final AppTypographyScale typography;
+  final VoidCallback onTap;
+
+  const _DateTimeRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.colors,
+    required this.typography,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: colors.primaryDark),
+            const SizedBox(width: AppDimens.spaceSm),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: typography.labelSm.copyWith(
+                    color: colors.textMuted,
+                    fontSize: 11,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: typography.titleSm.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: colors.ink,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: colors.textMuted,
+            ),
           ],
         ),
       ),

@@ -131,13 +131,27 @@ PeriodStats _calculateStats(List<Expense> expenses, StatsPeriod period) {
       break;
 
     case StatsPeriod.monthly:
+      // Use explicit local-time boundaries so they align with timestamps
+      // restored via DateTime.fromMillisecondsSinceEpoch (which is UTC-based
+      // unless the device timezone is accounted for).
       final monthStart = DateTime(now.year, now.month, 1);
-      final prevMonthStart = DateTime(now.year, now.month - 1, 1);
 
-      filtered = expenses.where((e) => e.dateTime.isAfter(monthStart)).toList();
+      // Safe previous-month calculation: go to the 1st of current month,
+      // then subtract one day to land in the previous month, then snap to
+      // the 1st of that month.
+      final prevMonthEnd = DateTime(now.year, now.month, 1);
+      final prevMonthStart = DateTime(
+        prevMonthEnd.year,
+        prevMonthEnd.month - 1,
+        1,
+      );
+
+      filtered = expenses
+          .where((e) => !e.dateTime.toLocal().isBefore(monthStart))
+          .toList();
       previousFiltered = expenses.where((e) {
-        return e.dateTime.isAfter(prevMonthStart) &&
-            e.dateTime.isBefore(monthStart);
+        final dt = e.dateTime.toLocal();
+        return !dt.isBefore(prevMonthStart) && dt.isBefore(prevMonthEnd);
       }).toList();
       break;
   }
@@ -179,9 +193,18 @@ PeriodStats _calculateStats(List<Expense> expenses, StatsPeriod period) {
       ? breakdowns.first
       : null;
 
-  final percentageChange = previousTotal > 0
-      ? ((total - previousTotal) / previousTotal) * 100
-      : 0.0;
+  // Calculate percentage change:
+  // - If both are 0 → 0.0%
+  // - If previous is 0 but current > 0 → treat as +100% (new spending baseline)
+  // - Otherwise → standard % change formula
+  final double percentageChange;
+  if (previousTotal == 0.0 && total == 0.0) {
+    percentageChange = 0.0;
+  } else if (previousTotal == 0.0) {
+    percentageChange = 100.0; // went from nothing to some spending
+  } else {
+    percentageChange = ((total - previousTotal) / previousTotal) * 100;
+  }
 
   final count = filtered.length;
   final avg = count > 0 ? total / count : 0.0;

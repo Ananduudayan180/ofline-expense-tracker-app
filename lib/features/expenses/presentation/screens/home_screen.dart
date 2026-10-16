@@ -83,9 +83,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     HeroMonthlyCard(
                       totalAmount: monthStats.totalAmount,
                       percentageChange: monthStats.percentageChangeFromPrevious,
-                      previousAmount: monthStats.previousPeriodAmount > 0
-                          ? monthStats.previousPeriodAmount
-                          : 1482.00,
+                      previousAmount: monthStats.previousPeriodAmount,
                     ),
                     const SizedBox(height: AppDimens.spaceMd),
 

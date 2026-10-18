@@ -8,12 +8,7 @@ import 'features/expenses/presentation/screens/main_navigation_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await HiveService.init();
-
-  runApp(
-    const ProviderScope(
-      child: ExpenseTrackerApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: ExpenseTrackerApp()));
 }
 
 class ExpenseTrackerApp extends ConsumerWidget {
@@ -22,7 +17,6 @@ class ExpenseTrackerApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
-
     return MaterialApp(
       title: 'Expense Tracker',
       debugShowCheckedModeBanner: false,

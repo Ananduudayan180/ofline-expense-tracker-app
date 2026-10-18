@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_dimens.dart';
 import '../../../../core/constants/app_typography.dart';
-import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../domain/entities/period_stats.dart';
 import '../providers/expense_providers.dart';
@@ -21,7 +20,6 @@ class StatisticsScreen extends ConsumerWidget {
     final now = DateTime.now();
     final colors = context.colors;
     final typography = context.typography;
-
     String periodTitle = '';
     String periodSubtitle = '';
     switch (selectedPeriod) {
@@ -44,10 +42,7 @@ class StatisticsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(
           'Statistics',
-          style: typography.headlineMd.copyWith(
-            fontWeight: FontWeight.w700,
-            color: colors.ink,
-          ),
+          style: typography.headlineMd.copyWith(fontWeight: FontWeight.w700),
         ),
       ),
       body: ListView(

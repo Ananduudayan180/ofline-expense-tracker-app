@@ -1,3 +1,4 @@
+import 'package:expense_tracker/features/expenses/presentation/widgets/recent_transactions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,9 +11,7 @@ import '../widgets/category_distribution_bar.dart';
 import '../widgets/hero_monthly_card.dart';
 import '../widgets/metric_tile.dart';
 import 'add_expense_bottom_sheet.dart';
-import 'edit_expense_bottom_sheet.dart';
 import '../widgets/theme_toggle_button.dart';
-import '../widgets/transaction_list_tile.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -37,10 +36,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         title: Text(
           'Expense Tracker',
-          style: typography.titleSm.copyWith(
-            color: colors.ink,
-            fontWeight: FontWeight.w600,
-          ),
+          style: typography.headlineMd.copyWith(fontWeight: FontWeight.w700),
         ),
         actions: [
           const ThemeToggleButton(),
@@ -57,10 +53,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
         data: (expenses) {
-          final displayedTransactions = _showAllTransactions
-              ? expenses
-              : expenses.take(4).toList();
-
           return Stack(
             children: [
               RefreshIndicator(
@@ -166,100 +158,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SizedBox(height: AppDimens.spaceSm),
 
                     // Transactions Card Container
-                    if (expenses.isEmpty)
-                      Container(
-                        padding: const EdgeInsets.all(AppDimens.spaceXl),
-                        decoration: BoxDecoration(
-                          color: colors.surfaceCard,
-                          borderRadius: BorderRadius.circular(
-                            AppDimens.radiusLg,
-                          ),
-                          border: Border.all(
-                            color: colors.borderSubtle,
-                            width: 1,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.wallet_outlined,
-                              size: 48,
-                              color: colors.textMuted,
-                            ),
-                            const SizedBox(height: AppDimens.spaceSm),
-                            Text(
-                              'No transactions yet',
-                              style: typography.titleSm,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Tap + below to add your first expense.',
-                              style: typography.bodyMd,
-                            ),
-                          ],
-                        ),
-                      )
-                    else
-                      Container(
-                        decoration: BoxDecoration(
-                          color: colors.surfaceCard,
-                          borderRadius: BorderRadius.circular(
-                            AppDimens.radiusLg,
-                          ),
-                          border: Border.all(
-                            color: colors.borderSubtle,
-                            width: 1,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(
-                                alpha: colors.isDark ? 0.3 : 0.02,
-                              ),
-                              offset: const Offset(0, 2),
-                              blurRadius: 6,
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            for (
-                              int i = 0;
-                              i < displayedTransactions.length;
-                              i++
-                            ) ...[
-                              TransactionListTile(
-                                expense: displayedTransactions[i],
-                                onTap: () {
-                                  EditExpenseBottomSheet.show(
-                                    context,
-                                    displayedTransactions[i],
-                                  );
-                                },
-                                onEdit: () {
-                                  EditExpenseBottomSheet.show(
-                                    context,
-                                    displayedTransactions[i],
-                                  );
-                                },
-                                onDelete: () {
-                                  ref
-                                      .read(expenseListProvider.notifier)
-                                      .deleteExpense(
-                                        displayedTransactions[i].id,
-                                      );
-                                },
-                              ),
-                              if (i < displayedTransactions.length - 1)
-                                Divider(
-                                  height: 1,
-                                  indent: AppDimens.spaceMd,
-                                  endIndent: AppDimens.spaceMd,
-                                  color: colors.surfaceContainerLow,
-                                ),
-                            ],
-                          ],
-                        ),
-                      ),
+                    RecentTransactions(
+                      expenses: expenses,
+                      showAllTransactions: _showAllTransactions,
+                    ),
                   ],
                 ),
               ),
@@ -273,7 +175,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   backgroundColor: colors.primary,
                   foregroundColor: colors.onPrimary,
                   elevation: 6,
-                  shape: const CircleBorder(),
                   onPressed: () {
                     AddExpenseBottomSheet.show(context);
                   },

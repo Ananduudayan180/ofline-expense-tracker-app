@@ -2,7 +2,6 @@ import 'package:expense_tracker/core/constants/app_colors.dart';
 import 'package:expense_tracker/core/constants/app_dimens.dart';
 import 'package:expense_tracker/core/constants/app_typography.dart';
 import 'package:expense_tracker/features/expenses/presentation/providers/add_expense_notifier.dart';
-import 'package:expense_tracker/features/expenses/presentation/screens/add_expense_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -69,7 +68,7 @@ Future<void> pickDateTime(BuildContext context, WidgetRef ref) async {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  DateTimeRow(
+                  _DateTimeRow(
                     icon: Icons.calendar_today_outlined,
                     label: 'Date',
                     value: DateFormat('EEE, MMM d, yyyy').format(tempDate),
@@ -96,7 +95,7 @@ Future<void> pickDateTime(BuildContext context, WidgetRef ref) async {
                     },
                   ),
                   const SizedBox(height: AppDimens.spaceSm),
-                  DateTimeRow(
+                  _DateTimeRow(
                     icon: Icons.access_time_rounded,
                     label: 'Time',
                     value: tempTime.format(ctx),
@@ -155,4 +154,68 @@ Future<void> pickDateTime(BuildContext context, WidgetRef ref) async {
       );
     },
   );
+}
+
+class _DateTimeRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final AppColorPalette colors;
+  final AppTypographyScale typography;
+  final VoidCallback onTap;
+
+  const _DateTimeRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.colors,
+    required this.typography,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(AppDimens.radiusMd),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: colors.primaryDark),
+            const SizedBox(width: AppDimens.spaceSm),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: typography.labelSm.copyWith(
+                    color: colors.textMuted,
+                    fontSize: 11,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: typography.titleSm.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: colors.ink,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: colors.textMuted,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

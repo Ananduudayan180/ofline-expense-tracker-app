@@ -1,14 +1,15 @@
-import 'package:expense_tracker/features/expenses/presentation/helpers/pick_date_time.dart';
+import 'package:expense_tracker/features/expenses/presentation/widgets/bottom_sheet_hero_amount_card.dart';
+import 'package:expense_tracker/features/expenses/presentation/widgets/date_time_selector.dart';
+import 'package:expense_tracker/features/expenses/presentation/widgets/note_input_field.dart';
+import 'package:expense_tracker/features/expenses/presentation/widgets/save_and_update_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_dimens.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/currency_formatter.dart';
-import '../../../../core/utils/date_formatter.dart';
 import '../providers/add_expense_notifier.dart';
 import '../providers/expense_providers.dart';
 import '../widgets/category_chip_grid.dart';
@@ -58,15 +59,6 @@ class _AddExpenseBottomSheetState extends ConsumerState<AddExpenseBottomSheet> {
     _noteController.dispose();
     super.dispose();
   }
-
-  void _syncAmountText(String text) {
-    _amountController.text = text;
-    _amountController.selection = TextSelection.fromPosition(
-      TextPosition(offset: text.length),
-    );
-  }
-
-  void _pickDateTime() => pickDateTime(context, ref);
 
   Future<void> _handleSave() async {
     final state = ref.read(addExpenseNotifierProvider);
@@ -204,117 +196,10 @@ class _AddExpenseBottomSheetState extends ConsumerState<AddExpenseBottomSheet> {
             const SizedBox(height: AppDimens.spaceMd),
 
             // Hero Amount Card
-            Container(
-              padding: const EdgeInsets.symmetric(
-                vertical: AppDimens.spaceLg,
-                horizontal: AppDimens.spaceMd,
-              ),
-              decoration: BoxDecoration(
-                color: colors.surfaceCard,
-                borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-                border: Border.all(color: colors.borderSubtle, width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(
-                      alpha: colors.isDark ? 0.3 : 0.02,
-                    ),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    'EXPENSE TOTAL',
-                    style: typography.labelMd.copyWith(
-                      color: colors.textMuted,
-                      letterSpacing: 1.0,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimens.spaceSm),
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      // Reserve space for the currency symbol + gap (≈ 30 px)
-                      // and leave at least 8 px margin on each side.
-                      final maxFieldWidth = math.max(
-                        constraints.maxWidth - 46,
-                        80.0,
-                      );
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(
-                            CurrencyFormatter.defaultSymbol,
-                            style: typography.numericHero.copyWith(
-                              color: colors.textMuted,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxWidth: maxFieldWidth,
-                              minWidth: 48,
-                            ),
-                            child: IntrinsicWidth(
-                              child: TextField(
-                                controller: _amountController,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
-                                // Limit raw character input to prevent extreme lengths
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d{0,9}(\.\d{0,2})?'),
-                                  ),
-                                ],
-                                style: typography.numericHero.copyWith(
-                                  color: colors.ink,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: '0.00',
-                                  hintStyle: typography.numericHero.copyWith(
-                                    color: colors.textMuted,
-                                  ),
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.zero,
-                                ),
-                                onChanged: (val) {
-                                  notifier.setAmountFromInput(val);
-                                  if (_showEnterAmountHint) {
-                                    final parsed = double.tryParse(val) ?? 0.0;
-                                    if (parsed > 0) {
-                                      setState(
-                                        () => _showEnterAmountHint = false,
-                                      );
-                                    }
-                                  }
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(height: AppDimens.spaceMd),
-
-                  _PresetButton(
-                    label: 'Clear',
-                    isClear: true,
-                    onTap: () {
-                      notifier.clearAmount();
-                      _syncAmountText('');
-                    },
-                  ),
-                ],
-              ),
+            BottomSheetHeroAmountCard(
+              amountController: _amountController,
+              setAmountFromInput: notifier.setAmountFromInput,
+              clearAmount: notifier.clearAmount,
             ),
             const SizedBox(height: AppDimens.spaceLg),
 
@@ -336,323 +221,23 @@ class _AddExpenseBottomSheetState extends ConsumerState<AddExpenseBottomSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Date & Time',
-                    style: typography.labelSm.copyWith(color: colors.textMuted),
-                  ),
-                  const SizedBox(height: 6),
-                  GestureDetector(
-                    onTap: _pickDateTime,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colors.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 32,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: colors.surfaceContainer,
-                                ),
-                                child: Icon(
-                                  Icons.edit_calendar_outlined,
-                                  size: 16,
-                                  color: colors.ink,
-                                ),
-                              ),
-                              const SizedBox(width: AppDimens.spaceSm),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    DateFormatter.formatFullDate(addState.date),
-                                    style: typography.titleSm.copyWith(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: colors.ink,
-                                    ),
-                                  ),
-                                  Text(
-                                    DateFormat('h:mm a').format(addState.date),
-                                    style: typography.labelSm.copyWith(
-                                      color: colors.textMuted,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          Icon(
-                            Icons.expand_more_rounded,
-                            size: 20,
-                            color: colors.textMuted,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  //Date & Time Selector
+                  DateTimeSelector(),
                   const SizedBox(height: AppDimens.spaceMd),
 
                   // Note Input Field
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Note',
-                        style: typography.labelSm.copyWith(
-                          color: colors.textMuted,
-                        ),
-                      ),
-                      Text(
-                        '${addState.note.length}/60',
-                        style: typography.labelSm.copyWith(
-                          color: colors.textMuted,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: _noteController,
-                    style: TextStyle(color: colors.ink),
-                    minLines: 1,
-                    maxLines: 2,
-                    onChanged: (val) => notifier.setNote(val),
-                    maxLength: 60,
-                    buildCounter: (
-                      context, {
-                      required currentLength,
-                      required isFocused,
-                      maxLength,
-                    }) => null,
-                    decoration: InputDecoration(
-                      hintText: 'Add a note (optional)',
-                      hintStyle: typography.bodyMd.copyWith(
-                        color: colors.textMuted,
-                      ),
-                      filled: true,
-                      fillColor: colors.surfaceContainerLow,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
+                  NoteInputField(noteController: _noteController),
                 ],
               ),
             ),
             const SizedBox(height: AppDimens.spaceLg),
 
             // Save Button – dynamic label + polished shadow
-            Builder(
-              builder: (context) {
-                final hasAmount = addState.amount > 0 || !_showEnterAmountHint;
-                final btnBg = hasAmount
-                    ? colors.primary
-                    : colors.surfaceContainerHigh;
-                final btnFg = hasAmount ? colors.onPrimary : colors.error;
-                final shadowColor = hasAmount
-                    ? colors.primary.withValues(alpha: 0.35)
-                    : Colors.transparent;
-
-                return Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-                    boxShadow: [
-                      BoxShadow(
-                        color: shadowColor,
-                        blurRadius: 18,
-                        spreadRadius: 0,
-                        offset: const Offset(0, 5),
-                      ),
-                      BoxShadow(
-                        color: hasAmount
-                            ? colors.primary.withValues(alpha: 0.12)
-                            : Colors.transparent,
-                        blurRadius: 32,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 220),
-                    transitionBuilder: (child, anim) =>
-                        FadeTransition(opacity: anim, child: child),
-                    child: ElevatedButton(
-                      key: ValueKey(hasAmount),
-                      onPressed: _handleSave,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: btnBg,
-                        foregroundColor: btnFg,
-                        elevation: 0,
-                        minimumSize: const Size(double.infinity, 54),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppDimens.radiusLg,
-                          ),
-                          side: hasAmount
-                              ? BorderSide.none
-                              : BorderSide(
-                                  color: colors.error.withValues(alpha: 0.35),
-                                  width: 1.5,
-                                ),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            hasAmount
-                                ? Icons.check_rounded
-                                : Icons.warning_amber_rounded,
-                            size: 20,
-                            color: btnFg,
-                          ),
-                          const SizedBox(width: AppDimens.spaceSm),
-                          Text(
-                            hasAmount ? 'Save Expense' : 'Enter Amount',
-                            style: typography.titleSm.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: btnFg,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
+            SaveAndUpdateButton(
+              handleSave: _handleSave,
+              showEnterAmountHint: _showEnterAmountHint,
             ),
             const SizedBox(height: AppDimens.spaceSm),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Helper widget for the date/time dialog rows ──────────────────────────────
-
-class DateTimeRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final AppColorPalette colors;
-  final AppTypographyScale typography;
-  final VoidCallback onTap;
-
-  const DateTimeRow({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.colors,
-    required this.typography,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: colors.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(AppDimens.radiusMd),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 18, color: colors.primaryDark),
-            const SizedBox(width: AppDimens.spaceSm),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: typography.labelSm.copyWith(
-                    color: colors.textMuted,
-                    fontSize: 11,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: typography.titleSm.copyWith(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: colors.ink,
-                  ),
-                ),
-              ],
-            ),
-            const Spacer(),
-            Icon(
-              Icons.chevron_right_rounded,
-              size: 18,
-              color: colors.textMuted,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PresetButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-  final bool isClear;
-
-  const _PresetButton({
-    required this.label,
-    required this.onTap,
-    this.isClear = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final typography = context.typography;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: colors.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isClear) ...[
-              Icon(Icons.backspace_outlined, size: 13, color: colors.error),
-              const SizedBox(width: 4),
-            ],
-            Text(
-              label,
-              style: typography.labelSm.copyWith(
-                color: isClear ? colors.error : colors.ink,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
           ],
         ),
       ),

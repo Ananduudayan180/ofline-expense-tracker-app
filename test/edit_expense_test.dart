@@ -1,3 +1,4 @@
+import 'package:expense_tracker/features/expenses/presentation/screens/expense_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,7 +6,6 @@ import 'package:expense_tracker/features/expenses/domain/entities/expense.dart';
 import 'package:expense_tracker/features/expenses/domain/entities/expense_category.dart';
 import 'package:expense_tracker/features/expenses/domain/repositories/expense_repository.dart';
 import 'package:expense_tracker/features/expenses/presentation/providers/expense_providers.dart';
-import 'package:expense_tracker/features/expenses/presentation/screens/edit_expense_bottom_sheet.dart';
 
 class MockExpenseRepository implements ExpenseRepository {
   List<Expense> expenses = [];
@@ -117,7 +117,7 @@ void main() {
           ],
           child: MaterialApp(
             home: Scaffold(
-              body: EditExpenseBottomSheet(expense: initialExpense),
+              body: ExpenseBottomSheet(expense: initialExpense),
             ),
           ),
         ),

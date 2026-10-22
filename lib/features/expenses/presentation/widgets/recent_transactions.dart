@@ -3,7 +3,7 @@ import 'package:expense_tracker/core/constants/app_dimens.dart';
 import 'package:expense_tracker/core/constants/app_typography.dart';
 import 'package:expense_tracker/features/expenses/domain/entities/expense.dart';
 import 'package:expense_tracker/features/expenses/presentation/providers/expense_providers.dart';
-import 'package:expense_tracker/features/expenses/presentation/screens/edit_expense_bottom_sheet.dart';
+import 'package:expense_tracker/features/expenses/presentation/screens/expense_bottom_sheet.dart';
 import 'package:expense_tracker/features/expenses/presentation/widgets/transaction_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -66,15 +66,15 @@ class RecentTransactions extends ConsumerWidget {
               TransactionListTile(
                 expense: displayedTransactions[i],
                 onTap: () {
-                  EditExpenseBottomSheet.show(
+                  ExpenseBottomSheet.show(
                     context,
-                    displayedTransactions[i],
+                    expense: displayedTransactions[i],
                   );
                 },
                 onEdit: () {
-                  EditExpenseBottomSheet.show(
+                  ExpenseBottomSheet.show(
                     context,
-                    displayedTransactions[i],
+                    expense: displayedTransactions[i],
                   );
                 },
                 onDelete: () {

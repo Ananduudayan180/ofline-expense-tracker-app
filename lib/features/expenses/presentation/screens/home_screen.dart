@@ -10,7 +10,7 @@ import '../providers/expense_providers.dart';
 import '../widgets/category_distribution_bar.dart';
 import '../widgets/hero_monthly_card.dart';
 import '../widgets/metric_tile.dart';
-import 'add_expense_bottom_sheet.dart';
+import 'expense_bottom_sheet.dart';
 import '../widgets/theme_toggle_button.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -176,7 +176,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   foregroundColor: colors.onPrimary,
                   elevation: 6,
                   onPressed: () {
-                    AddExpenseBottomSheet.show(context);
+                    ExpenseBottomSheet.show(context);
                   },
                   child: Icon(Icons.add, size: 28, color: colors.onPrimary),
                 ),

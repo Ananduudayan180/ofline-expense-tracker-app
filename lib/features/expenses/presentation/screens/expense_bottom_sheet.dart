@@ -214,8 +214,8 @@ class _ExpenseBottomSheetState extends ConsumerState<ExpenseBottomSheet> {
   }) {
     final amountText = CurrencyFormatter.format(expense.amount);
     final message = isEditing
-        ? 'Updated • ${expense.title} ($amountText)'
-        : 'Expense Logged • ${expense.category.label} ($amountText)';
+        ? 'Updated • ${expense.category.label} ($amountText)'
+        : 'Added • ${expense.category.label} ($amountText)';
 
     return _snackBar(
       colors,
@@ -243,11 +243,6 @@ class _ExpenseBottomSheetState extends ConsumerState<ExpenseBottomSheet> {
               style: TextStyle(color: colors.ink, fontSize: 13),
             ),
           ),
-          if (!isEditing)
-            Text(
-              'Offline ready',
-              style: TextStyle(color: colors.primaryDark, fontSize: 11),
-            ),
         ],
       ),
     );

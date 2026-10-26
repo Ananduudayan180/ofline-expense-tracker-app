@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../data/datasources/expense_local_data_source.dart';
 import '../../data/repositories/expense_repository_impl.dart';
 import '../../domain/entities/expense.dart';
@@ -67,7 +69,9 @@ class ExpenseListNotifier extends AsyncNotifier<List<Expense>> {
 }
 
 final expenseListProvider =
-    AsyncNotifierProvider<ExpenseListNotifier, List<Expense>>(ExpenseListNotifier.new);
+    AsyncNotifierProvider<ExpenseListNotifier, List<Expense>>(
+      ExpenseListNotifier.new,
+    );
 
 // Selected Stats Period Notifier (Daily, Weekly, Monthly)
 class SelectedStatsPeriodNotifier extends Notifier<StatsPeriod> {
@@ -81,7 +85,8 @@ class SelectedStatsPeriodNotifier extends Notifier<StatsPeriod> {
 
 final selectedStatsPeriodProvider =
     NotifierProvider<SelectedStatsPeriodNotifier, StatsPeriod>(
-        SelectedStatsPeriodNotifier.new);
+      SelectedStatsPeriodNotifier.new,
+    );
 
 // Monthly Total Provider
 final currentMonthStatsProvider = Provider<PeriodStats>((ref) {
@@ -122,56 +127,53 @@ PeriodStats _calculateStats(List<Expense> expenses, StatsPeriod period) {
   switch (period) {
     case StatsPeriod.daily:
       final todayStart = DateTime(now.year, now.month, now.day);
-      final yesterdayStart = todayStart.subtract(const Duration(days: 1));
+      final yesterdayStart = DateTime(now.year, now.month, now.day - 1);
 
-      filtered = expenses.where((e) => e.dateTime.isAfter(todayStart)).toList();
+      filtered = expenses.where((e) {
+        final dt = e.dateTime.toLocal();
+        return !dt.isBefore(todayStart);
+      }).toList();
       previousFiltered = expenses.where((e) {
-        return e.dateTime.isAfter(yesterdayStart) &&
-            e.dateTime.isBefore(todayStart);
+        final dt = e.dateTime.toLocal();
+        return !dt.isBefore(yesterdayStart) && dt.isBefore(todayStart);
       }).toList();
       break;
 
     case StatsPeriod.weekly:
-      final weekStart = DateTime(now.year, now.month, now.day)
-          .subtract(Duration(days: now.weekday - 1));
+      final todayMidnight = DateTime(now.year, now.month, now.day);
+      final weekStart = todayMidnight.subtract(Duration(days: now.weekday - 1));
       final prevWeekStart = weekStart.subtract(const Duration(days: 7));
 
-      filtered = expenses.where((e) => e.dateTime.isAfter(weekStart)).toList();
+      filtered = expenses.where((e) {
+        final dt = e.dateTime.toLocal();
+        return !dt.isBefore(weekStart);
+      }).toList();
       previousFiltered = expenses.where((e) {
-        return e.dateTime.isAfter(prevWeekStart) &&
-            e.dateTime.isBefore(weekStart);
+        final dt = e.dateTime.toLocal();
+        return !dt.isBefore(prevWeekStart) && dt.isBefore(weekStart);
       }).toList();
       break;
 
     case StatsPeriod.monthly:
-      // Use explicit local-time boundaries so they align with timestamps
-      // restored via DateTime.fromMillisecondsSinceEpoch (which is UTC-based
-      // unless the device timezone is accounted for).
       final monthStart = DateTime(now.year, now.month, 1);
+      final prevMonthStart = DateTime(now.year, now.month - 1, 1);
 
-      // Safe previous-month calculation: go to the 1st of current month,
-      // then subtract one day to land in the previous month, then snap to
-      // the 1st of that month.
-      final prevMonthEnd = DateTime(now.year, now.month, 1);
-      final prevMonthStart = DateTime(
-        prevMonthEnd.year,
-        prevMonthEnd.month - 1,
-        1,
-      );
-
-      filtered = expenses
-          .where((e) => !e.dateTime.toLocal().isBefore(monthStart))
-          .toList();
+      filtered = expenses.where((e) {
+        final dt = e.dateTime.toLocal();
+        return !dt.isBefore(monthStart);
+      }).toList();
       previousFiltered = expenses.where((e) {
         final dt = e.dateTime.toLocal();
-        return !dt.isBefore(prevMonthStart) && dt.isBefore(prevMonthEnd);
+        return !dt.isBefore(prevMonthStart) && dt.isBefore(monthStart);
       }).toList();
       break;
   }
 
   final total = filtered.fold<double>(0.0, (sum, e) => sum + e.amount);
-  final previousTotal =
-      previousFiltered.fold<double>(0.0, (sum, e) => sum + e.amount);
+  final previousTotal = previousFiltered.fold<double>(
+    0.0,
+    (sum, e) => sum + e.amount,
+  );
 
   // Group by category
   final Map<ExpenseCategoryType, ({double amount, int count})> categoryMap = {};
@@ -191,12 +193,14 @@ PeriodStats _calculateStats(List<Expense> expenses, StatsPeriod period) {
   for (final cat in ExpenseCategory.all) {
     final data = categoryMap[cat.type]!;
     final percentage = total > 0 ? (data.amount / total) * 100 : 0.0;
-    breakdowns.add(CategoryBreakdown(
-      category: cat,
-      amount: data.amount,
-      count: data.count,
-      percentage: percentage,
-    ));
+    breakdowns.add(
+      CategoryBreakdown(
+        category: cat,
+        amount: data.amount,
+        count: data.count,
+        percentage: percentage,
+      ),
+    );
   }
 
   // Sort descending by amount
@@ -207,16 +211,31 @@ PeriodStats _calculateStats(List<Expense> expenses, StatsPeriod period) {
       : null;
 
   // Calculate percentage change:
-  // - If both are 0 → 0.0%
-  // - If previous is 0 but current > 0 → treat as +100% (new spending baseline)
+  // - If both are 0 → 0.0%, noChange
+  // - If previous is 0 and current > 0 → newSpending (instead of 100% hike)
+  // - If current is 0 and previous > 0 → -100.0%, decrease (100% decrease)
   // - Otherwise → standard % change formula
   final double percentageChange;
+  final SpendingTrend trend;
+
   if (previousTotal == 0.0 && total == 0.0) {
     percentageChange = 0.0;
+    trend = SpendingTrend.noChange;
   } else if (previousTotal == 0.0) {
-    percentageChange = 100.0; // went from nothing to some spending
+    percentageChange = 0.0;
+    trend = SpendingTrend.newSpending;
+  } else if (total == 0.0) {
+    percentageChange = -100.0;
+    trend = SpendingTrend.decrease;
   } else {
     percentageChange = ((total - previousTotal) / previousTotal) * 100;
+    if (percentageChange > 0) {
+      trend = SpendingTrend.increase;
+    } else if (percentageChange < 0) {
+      trend = SpendingTrend.decrease;
+    } else {
+      trend = SpendingTrend.noChange;
+    }
   }
 
   final count = filtered.length;
@@ -231,5 +250,6 @@ PeriodStats _calculateStats(List<Expense> expenses, StatsPeriod period) {
     topCategory: topCategory,
     previousPeriodAmount: previousTotal,
     percentageChangeFromPrevious: percentageChange,
+    spendingTrend: trend,
   );
 }

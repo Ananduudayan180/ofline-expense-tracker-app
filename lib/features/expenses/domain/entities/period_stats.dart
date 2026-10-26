@@ -1,10 +1,8 @@
 import 'expense_category.dart';
 
-enum StatsPeriod {
-  daily,
-  weekly,
-  monthly,
-}
+enum StatsPeriod { daily, weekly, monthly }
+
+enum SpendingTrend { noChange, newSpending, increase, decrease }
 
 class CategoryBreakdown {
   final ExpenseCategory category;
@@ -29,6 +27,7 @@ class PeriodStats {
   final CategoryBreakdown? topCategory;
   final double previousPeriodAmount;
   final double percentageChangeFromPrevious; // e.g. -4.2%
+  final SpendingTrend spendingTrend;
 
   const PeriodStats({
     required this.period,
@@ -39,5 +38,22 @@ class PeriodStats {
     this.topCategory,
     this.previousPeriodAmount = 0.0,
     this.percentageChangeFromPrevious = 0.0,
+    this.spendingTrend = SpendingTrend.noChange,
   });
+
+  String get percentageChangeLabel {
+    switch (spendingTrend) {
+      case SpendingTrend.newSpending:
+        return 'New Spending';
+      case SpendingTrend.noChange:
+        return 'No Change';
+      case SpendingTrend.decrease:
+        if (totalAmount == 0.0 && previousPeriodAmount > 0.0) {
+          return '-100%';
+        }
+        return '-${percentageChangeFromPrevious.abs().toStringAsFixed(1)}%';
+      case SpendingTrend.increase:
+        return '+${percentageChangeFromPrevious.toStringAsFixed(1)}%';
+    }
+  }
 }

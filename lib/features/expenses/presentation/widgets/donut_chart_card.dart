@@ -2,6 +2,7 @@ import 'package:expense_tracker/core/constants/app_colors.dart';
 import 'package:expense_tracker/core/constants/app_dimens.dart';
 import 'package:expense_tracker/core/constants/app_typography.dart';
 import 'package:expense_tracker/features/expenses/presentation/providers/expense_providers.dart';
+import 'package:expense_tracker/features/expenses/domain/entities/period_stats.dart';
 import 'package:expense_tracker/features/expenses/presentation/widgets/donut_chart_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,8 +14,12 @@ class DonutChartCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
     final typography = context.typography;
-    final periodTitle = '';
     final stats = ref.watch(periodStatsProvider);
+    final periodTitle = switch (stats.period) {
+      StatsPeriod.daily => 'Today',
+      StatsPeriod.weekly => 'This Week',
+      StatsPeriod.monthly => 'This Month',
+    };
     return Container(
       padding: const EdgeInsets.all(AppDimens.spaceLg),
       decoration: BoxDecoration(

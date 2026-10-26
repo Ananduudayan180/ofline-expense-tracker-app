@@ -1,26 +1,49 @@
 import 'package:flutter/material.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_dimens.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../domain/entities/period_stats.dart';
 
 class HeroMonthlyCard extends StatelessWidget {
   final double totalAmount;
   final double percentageChange;
   final double previousAmount;
+  final SpendingTrend? spendingTrend;
 
   const HeroMonthlyCard({
     super.key,
     required this.totalAmount,
-    this.percentageChange = -4.2,
-    this.previousAmount = 1482.00,
+    this.percentageChange = 0.0,
+    this.previousAmount = 0.0,
+    this.spendingTrend,
   });
+
+  SpendingTrend get resolvedTrend {
+    if (spendingTrend != null) return spendingTrend!;
+    if (previousAmount == 0.0 && totalAmount == 0.0) {
+      return SpendingTrend.noChange;
+    }
+    if (previousAmount == 0.0 && totalAmount > 0.0) {
+      return SpendingTrend.newSpending;
+    }
+    if (totalAmount == 0.0 && previousAmount > 0.0) {
+      return SpendingTrend.decrease;
+    }
+    if (percentageChange > 0.0) {
+      return SpendingTrend.increase;
+    }
+    if (percentageChange < 0.0) {
+      return SpendingTrend.decrease;
+    }
+    return SpendingTrend.noChange;
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final typography = context.typography;
-    final isDecrease = percentageChange <= 0;
 
     return Container(
       width: double.infinity,
@@ -29,7 +52,9 @@ class HeroMonthlyCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: colors.primary.withValues(alpha: colors.isDark ? 0.25 : 0.35),
+            color: colors.primary.withValues(
+              alpha: colors.isDark ? 0.25 : 0.35,
+            ),
             offset: const Offset(0, 6),
             blurRadius: 18,
           ),
@@ -109,26 +134,7 @@ class HeroMonthlyCard extends StatelessWidget {
                           color: colors.onPrimary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              isDecrease
-                                  ? Icons.arrow_downward_rounded
-                                  : Icons.arrow_upward_rounded,
-                              size: 14,
-                              color: colors.onPrimary,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              '${percentageChange.abs().toStringAsFixed(1)}%',
-                              style: typography.labelSm.copyWith(
-                                color: colors.onPrimary,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
+                        child: _buildTrendContent(context),
                       ),
                       const SizedBox(width: AppDimens.spaceSm),
                       Text(
@@ -146,5 +152,66 @@ class HeroMonthlyCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildTrendContent(BuildContext context) {
+    final colors = context.colors;
+    final typography = context.typography;
+
+    switch (resolvedTrend) {
+      case SpendingTrend.newSpending:
+        return Text(
+          'New Spending',
+          style: typography.labelSm.copyWith(
+            color: colors.onPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        );
+      case SpendingTrend.noChange:
+        return Text(
+          'No Change',
+          style: typography.labelSm.copyWith(
+            color: colors.onPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        );
+      case SpendingTrend.decrease:
+        final label = totalAmount == 0.0 && previousAmount > 0.0
+            ? '-100%'
+            : '${percentageChange.abs().toStringAsFixed(1)}%';
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.arrow_downward_rounded,
+              size: 14,
+              color: colors.onPrimary,
+            ),
+            const SizedBox(width: 2),
+            Text(
+              label,
+              style: typography.labelSm.copyWith(
+                color: colors.onPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        );
+      case SpendingTrend.increase:
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.arrow_upward_rounded, size: 14, color: colors.onPrimary),
+            const SizedBox(width: 2),
+            Text(
+              '${percentageChange.abs().toStringAsFixed(1)}%',
+              style: typography.labelSm.copyWith(
+                color: colors.onPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        );
+    }
   }
 }

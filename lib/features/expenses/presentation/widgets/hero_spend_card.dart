@@ -3,6 +3,7 @@ import 'package:expense_tracker/core/constants/app_colors.dart';
 import 'package:expense_tracker/core/constants/app_typography.dart';
 import 'package:expense_tracker/core/utils/currency_formatter.dart';
 import 'package:expense_tracker/features/expenses/presentation/providers/expense_providers.dart';
+import 'package:expense_tracker/features/expenses/domain/entities/period_stats.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,7 +13,11 @@ class HeroSpendCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stats = ref.watch(periodStatsProvider);
-    final periodTitle = '';
+    final periodTitle = switch (stats.period) {
+      StatsPeriod.daily => 'Today',
+      StatsPeriod.weekly => 'This Week',
+      StatsPeriod.monthly => 'This Month',
+    };
     final colors = context.colors;
     final typography = context.typography;
     return Container(
@@ -60,26 +65,7 @@ class HeroSpendCard extends ConsumerWidget {
                       : Colors.white.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(AppDimens.radiusFull),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      stats.percentageChangeFromPrevious <= 0
-                          ? Icons.trending_down
-                          : Icons.trending_up,
-                      size: 14,
-                      color: colors.onPrimary,
-                    ),
-                    const SizedBox(width: 3),
-                    Text(
-                      '${stats.percentageChangeFromPrevious.abs().toStringAsFixed(1)}%',
-                      style: typography.labelSm.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: colors.onPrimary,
-                      ),
-                    ),
-                  ],
-                ),
+                child: _buildTrendContent(context, stats),
               ),
             ],
           ),
@@ -123,5 +109,63 @@ class HeroSpendCard extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildTrendContent(BuildContext context, PeriodStats stats) {
+    final colors = context.colors;
+    final typography = context.typography;
+
+    switch (stats.spendingTrend) {
+      case SpendingTrend.newSpending:
+        return Text(
+          'New Spending',
+          style: typography.labelSm.copyWith(
+            fontWeight: FontWeight.w700,
+            color: colors.onPrimary,
+          ),
+        );
+      case SpendingTrend.noChange:
+        return Text(
+          'No Change',
+          style: typography.labelSm.copyWith(
+            fontWeight: FontWeight.w700,
+            color: colors.onPrimary,
+          ),
+        );
+      case SpendingTrend.decrease:
+        final label =
+            stats.totalAmount == 0.0 && stats.previousPeriodAmount > 0.0
+            ? '-100%'
+            : '${stats.percentageChangeFromPrevious.abs().toStringAsFixed(1)}%';
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.trending_down, size: 14, color: colors.onPrimary),
+            const SizedBox(width: 3),
+            Text(
+              label,
+              style: typography.labelSm.copyWith(
+                fontWeight: FontWeight.w700,
+                color: colors.onPrimary,
+              ),
+            ),
+          ],
+        );
+      case SpendingTrend.increase:
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.trending_up, size: 14, color: colors.onPrimary),
+            const SizedBox(width: 3),
+            Text(
+              '${stats.percentageChangeFromPrevious.abs().toStringAsFixed(1)}%',
+              style: typography.labelSm.copyWith(
+                fontWeight: FontWeight.w700,
+                color: colors.onPrimary,
+              ),
+            ),
+          ],
+        );
+    }
   }
 }

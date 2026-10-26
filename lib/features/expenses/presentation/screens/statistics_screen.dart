@@ -20,20 +20,16 @@ class StatisticsScreen extends ConsumerWidget {
     final now = DateTime.now();
     final colors = context.colors;
     final typography = context.typography;
-    String periodTitle = '';
     String periodSubtitle = '';
     switch (selectedPeriod) {
       case StatsPeriod.daily:
-        periodTitle = 'Today';
         periodSubtitle = DateFormatter.formatFullDate(now);
         break;
       case StatsPeriod.weekly:
-        periodTitle = 'This Week';
-        periodSubtitle = 'Last 7 Days';
+        periodSubtitle = 'this week';
         break;
       case StatsPeriod.monthly:
-        periodTitle = DateFormatter.formatMonthYear(now);
-        periodSubtitle = 'Monthly Period';
+        periodSubtitle = DateFormatter.formatMonthYear(now);
         break;
     }
 

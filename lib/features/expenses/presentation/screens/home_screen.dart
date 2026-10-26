@@ -77,6 +77,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       totalAmount: monthStats.totalAmount,
                       percentageChange: monthStats.percentageChangeFromPrevious,
                       previousAmount: monthStats.previousPeriodAmount,
+                      spendingTrend: monthStats.spendingTrend,
                     ),
                     const SizedBox(height: AppDimens.spaceMd),
 

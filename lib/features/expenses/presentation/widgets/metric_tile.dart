@@ -41,16 +41,22 @@ class MetricTile extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                label.toUpperCase(),
-                style: typography.labelSm.copyWith(
-                  letterSpacing: 0.8,
-                  color: colors.textMuted,
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Text(
+                  label.toUpperCase(),
+                  style: typography.labelSm.copyWith(
+                    letterSpacing: 0.8,
+                    color: colors.textMuted,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: AppDimens.spaceXs),
               Container(
                 width: 26,
                 height: 26,
@@ -70,11 +76,16 @@ class MetricTile extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                value,
-                style: typography.headlineMd.copyWith(
-                  color: colors.ink,
-                  fontWeight: FontWeight.w700,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  value,
+                  style: typography.headlineMd.copyWith(
+                    color: colors.ink,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 1,
                 ),
               ),
               const SizedBox(height: 2),

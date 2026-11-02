@@ -40,6 +40,12 @@ dependencies:
   google_fonts: ^9.0.0
   intl: ^0.20.3
   uuid: ^4.6.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/app_icon.png"
 
 dev_dependencies:
   flutter_test:
